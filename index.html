@@ -2249,7 +2249,10 @@ function ExecSummary() {
       <div style={{ background: "#FFF8E7", borderLeft: `4px solid ${C.amber}`, padding: "14px 18px", marginBottom: 20, borderRadius: "0 4px 4px 0" }}>
         <div style={{ fontFamily: mono, fontSize: 11, fontWeight: 700, color: C.amber, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 8 }}>Current Assessment</div>
         <div style={{ fontSize: 14, lineHeight: 1.6 }}>
-          Across the 7 names in our coverage set, <strong>the analysis does not currently identify compelling entry points in tier 1 BDCs</strong>. The average reported FV/Cost is <S>{avgFVCost.toFixed(1)}%</S> and the average credit-implied recovery is <S>{avgImplied.toFixed(1)}%</S> — a gap of just <S>{(avgFVCost - avgImplied).toFixed(1)}pp</S>. This means the market is broadly <em>not</em> pricing in material incremental credit risk. The 15-35% price declines from July 2025 peaks are overwhelmingly explained by non-credit factors: rate compression, premium normalization, sector contagion, and idiosyncratic events. These discounts may narrow over time as headwinds fade, but the path to 20%+ capital appreciation from current levels requires either a credit dislocation that hasn't occurred or a re-rating to historical premiums that is unlikely in the current rate environment. We continue to monitor for widening credit residuals that would signal a genuine mispricing.
+          Across the 7 names in our coverage set, <strong>the analysis does not currently identify compelling entry points in either BDC equity or unsecured debt</strong>. The average reported FV/Cost is <S>{avgFVCost.toFixed(1)}%</S> and the average credit-implied recovery is <S>{avgImplied.toFixed(1)}%</S> — a gap of just <S>{(avgFVCost - avgImplied).toFixed(1)}pp</S>. This means the market is broadly <em>not</em> pricing in material incremental credit risk. The 15-35% equity price declines from July 2025 peaks are overwhelmingly explained by non-credit factors: rate compression, premium normalization, sector contagion, and idiosyncratic events. These discounts may narrow over time as headwinds fade, but the path to 20%+ capital appreciation from current levels requires either a credit dislocation that hasn't occurred or a re-rating to historical premiums that is unlikely in the current rate environment.
+        </div>
+        <div style={{ fontSize: 14, lineHeight: 1.6, marginTop: 10 }}>
+          <strong>Fixed income corroborates.</strong> Unsecured bond pricing across the set shows yields of 6.1-6.2% for tier 1 names (ARCC, BXSL, TSLX) and 7.7-7.8% for names with idiosyncratic risk (TCPC, OTF). The unsecured bond market is beginning to price additional risk considerations — bid prices have softened from par to the 94-99 range since late January — but is still far from reflecting a true market dislocation and does not yet represent attractive investment opportunities for our return profile. Notably, the yields on unsecured notes also imply that CLO paper, which is structurally senior, would be even less attractive from a yield perspective. We continue to monitor for widening credit residuals in the equity and spread widening in the debt that would signal a genuine mispricing across the capital structure.
         </div>
       </div>
 
@@ -2470,6 +2473,9 @@ function MarketMod() {
           <p style={{ margin: "0 0 10px 0" }}>
             <strong>The framework's key question:</strong> how much of the 15-35% decline from July peaks is warranted by fundamentals? Q4 2025 earnings showed stable to improving credit metrics for 6 of 7 names. Non-accruals remain below 1% of FV for 5 names. The $1.4B Blue Owl portfolio sale at 99.7% of par validated marks for OBDC and OTF. The discount attribution analysis on the Comparison tab quantifies the gap between market-implied credit concern and reported portfolio health — and suggests the de-rating has created the widest entry points since March 2020 for the highest-quality names.
           </p>
+          <p style={{ margin: "0 0 10px 0" }}>
+            <strong>The unsecured bond market tells a complementary story.</strong> Through the equity selloff from July to January, BDC unsecured bonds remained remarkably stable — tier 1 names traded near or above par with yields in the 5.5-5.7% range. This was strong evidence that the equity decline was sentiment-driven rather than credit-driven: the bond market, which has senior claim and is priced by a more fundamentals-oriented investor base, was not worried. Since late January, unsecured bond prices have softened modestly — BXSL from ~99 to ~96, OTF from ~99 to ~94, ARCC from ~101 to ~98 — and yields have widened by 30-80bps. The bond market is starting to price additional risk, but the magnitude of the move remains small relative to the equity decline and is still far from levels that would indicate a credit dislocation. Tier 1 unsecured yields of 6.1-6.2% do not meet our return threshold, and given that CLO tranches are structurally senior to the unsecured notes, CLO paper from these issuers would be even less attractive from a yield perspective.
+          </p>
           <p style={{ margin: "0 0 0 0", fontStyle: "italic", color: C.muted, fontSize: 11 }}>
             NII compression from rate cuts remains the primary fundamental headwind. SOFR forwards imply ~75-100bps of additional cuts, which would reduce NII by $0.10-0.20/share across the sector. Several names have already guided lower (TSLX: $1.87-1.95 for 2026 vs $2.18 in 2025; BXSL: declining from $0.91 to $0.80/qtr). Dividend coverage is thinning at GBDC (which already cut) and bears watching at ARCC (104% Q4). The rate trajectory is the variable to monitor — if cuts pause, the discount narrows; if they accelerate, further dividend adjustments become likely.
           </p>
@@ -2540,6 +2546,407 @@ function MarketMod() {
           );
         })}
       </div>
+
+      {/* Unsecured Bond Bid YTW Chart */}
+      <div style={{ fontFamily: mono, fontSize: 10, fontWeight: 700, color: C.navy, textTransform: "uppercase", letterSpacing: "0.06em", padding: "6px 8px", background: C.frost, borderLeft: `3px solid ${C.navy}`, marginBottom: 8 }}>
+        Unsecured Bond Bid YTW (Weekly)
+      </div>
+      <div style={{ fontFamily: mono, fontSize: 9, color: C.muted, margin: "-4px 0 8px 0", lineHeight: 1.6 }}>
+        ARCC 5.250% Apr'31 (BBB-) | TCPC 6.950% Nov'28 (BBB-) | OBDC 5.950% Sep'28 (BBB) | OTF 6.250% Jan'31 (BBB) | BXSL 5.100% Jan'30 (BBB) | GBDC 6.000% Jan'29 (BBB-) | TSLX 5.625% Feb'30 (BBB-)
+      </div>
+      {(() => {
+        const bondYTW = [
+    {d:"1/18/24",OBDC:6.247},
+    {d:"1/23/24",OBDC:6.205},
+    {d:"1/28/24",OBDC:6.197,GBDC:6.318},
+    {d:"2/2/24",OBDC:6.413,GBDC:6.406},
+    {d:"2/7/24",OBDC:6.320,GBDC:6.470},
+    {d:"2/12/24",OBDC:6.388,GBDC:6.487},
+    {d:"2/17/24",OBDC:6.498,GBDC:6.639},
+    {d:"2/22/24",OBDC:6.456,GBDC:6.612},
+    {d:"2/27/24",OBDC:6.511,GBDC:6.643},
+    {d:"3/3/24",OBDC:6.556,GBDC:6.581},
+    {d:"3/8/24",OBDC:6.262,GBDC:6.527},
+    {d:"3/13/24",OBDC:6.284,GBDC:6.548},
+    {d:"3/18/24",OBDC:6.243,GBDC:6.628},
+    {d:"3/23/24",OBDC:6.108,GBDC:6.426},
+    {d:"3/28/24",OBDC:6.110,GBDC:6.353},
+    {d:"4/2/24",OBDC:6.252,GBDC:6.567},
+    {d:"4/7/24",OBDC:6.218,GBDC:6.542},
+    {d:"4/12/24",OBDC:6.464,GBDC:6.605},
+    {d:"4/17/24",OBDC:6.502,GBDC:6.748},
+    {d:"4/22/24",OBDC:6.458,GBDC:6.811},
+    {d:"4/27/24",OBDC:6.420,GBDC:6.789},
+    {d:"5/2/24",OBDC:6.216,GBDC:6.642},
+    {d:"5/7/24",OBDC:6.126,GBDC:6.474},
+    {d:"5/12/24",OBDC:6.201,GBDC:6.485},
+    {d:"5/17/24",OBDC:6.095,GBDC:6.410},
+    {d:"5/22/24",TCPC:7.327,OBDC:6.156,GBDC:6.449},
+    {d:"5/27/24",TCPC:7.320,OBDC:6.208,GBDC:6.533},
+    {d:"6/1/24",TCPC:7.314,OBDC:6.156,GBDC:6.486},
+    {d:"6/6/24",TCPC:7.205,OBDC:6.027,GBDC:6.296},
+    {d:"6/11/24",TCPC:7.337,OBDC:6.172,GBDC:6.437},
+    {d:"6/16/24",TCPC:7.395,OBDC:6.094,GBDC:6.335},
+    {d:"6/21/24",TCPC:7.520,OBDC:6.297,GBDC:6.452},
+    {d:"6/26/24",TCPC:7.640,OBDC:6.387,GBDC:6.504},
+    {d:"7/1/24",TCPC:7.590,OBDC:6.369,GBDC:6.482},
+    {d:"7/6/24",TCPC:7.131,OBDC:6.111,GBDC:6.263},
+    {d:"7/11/24",TCPC:7.105,OBDC:6.067,GBDC:6.187},
+    {d:"7/16/24",TCPC:7.042,OBDC:6.036,GBDC:6.161},
+    {d:"7/21/24",TCPC:7.121,OBDC:6.108,GBDC:6.260},
+    {d:"7/26/24",TCPC:7.019,OBDC:6.012,GBDC:6.214},
+    {d:"7/31/24",TCPC:6.871,OBDC:5.811,GBDC:6.085},
+    {d:"8/5/24",TCPC:6.832,OBDC:5.859,GBDC:6.007},
+    {d:"8/10/24",TCPC:6.947,OBDC:5.897,GBDC:6.024},
+    {d:"8/15/24",TCPC:6.942,OBDC:5.730,GBDC:5.963},
+    {d:"8/20/24",TCPC:6.653,OBDC:5.622,GBDC:5.815},
+    {d:"8/25/24",TCPC:6.537,OBDC:5.501,GBDC:5.693},
+    {d:"8/30/24",TCPC:6.483,OBDC:5.492,GBDC:5.761},
+    {d:"9/4/24",TCPC:6.447,OBDC:5.366,GBDC:5.666},
+    {d:"9/9/24",TCPC:6.418,OBDC:5.255,GBDC:5.531},
+    {d:"9/14/24",TCPC:6.339,OBDC:5.281,GBDC:5.497},
+    {d:"9/19/24",TCPC:6.346,OBDC:5.247,GBDC:5.501},
+    {d:"9/24/24",TCPC:6.359,OBDC:5.234,GBDC:5.554},
+    {d:"9/29/24",TCPC:6.426,OBDC:5.276,GBDC:5.562},
+    {d:"10/4/24",TCPC:6.624,OBDC:5.599,GBDC:5.715},
+    {d:"10/9/24",TCPC:6.702,OBDC:5.604,GBDC:5.781},
+    {d:"10/16/24",TCPC:6.607,OBDC:5.594,GBDC:5.661},
+    {d:"10/21/24",TCPC:6.761,OBDC:5.727,GBDC:5.797},
+    {d:"10/26/24",TCPC:6.720,OBDC:5.788,GBDC:5.936},
+    {d:"10/31/24",TCPC:6.808,OBDC:5.905,GBDC:6.005},
+    {d:"11/5/24",TCPC:6.673,OBDC:5.874,GBDC:5.910},
+    {d:"11/10/24",TCPC:6.441,OBDC:5.749,GBDC:5.773},
+    {d:"11/15/24",TCPC:6.485,OBDC:5.908,GBDC:5.881},
+    {d:"11/20/24",TCPC:6.408,OBDC:5.921,GBDC:5.919},
+    {d:"11/25/24",TCPC:6.298,OBDC:5.790,GBDC:5.881},
+    {d:"11/30/24",TCPC:6.134,OBDC:5.698,GBDC:5.818},
+    {d:"12/5/24",TCPC:6.044,OBDC:5.672,GBDC:5.771},
+    {d:"12/10/24",TCPC:5.983,OBDC:5.636,GBDC:5.755},
+    {d:"12/15/24",TCPC:6.025,OBDC:5.772,GBDC:5.891},
+    {d:"12/20/24",TCPC:6.072,OBDC:5.861,GBDC:6.065},
+    {d:"12/27/24",TCPC:6.226,OBDC:5.906,GBDC:6.119},
+    {d:"1/1/25",ARCC:5.964,TCPC:5.928,OBDC:5.870,GBDC:6.027},
+    {d:"1/6/25",ARCC:5.977,TCPC:5.881,OBDC:5.891,GBDC:6.095},
+    {d:"1/11/25",ARCC:6.161,TCPC:6.059,OBDC:6.021,GBDC:6.283},
+    {d:"1/16/25",ARCC:6.069,TCPC:5.937,OBDC:5.756,GBDC:6.055},
+    {d:"1/21/25",ARCC:5.999,TCPC:5.816,OBDC:5.819,GBDC:6.032},
+    {d:"1/26/25",ARCC:6.039,TCPC:5.847,OBDC:5.847,GBDC:6.031},
+    {d:"1/31/25",ARCC:5.932,TCPC:5.847,OBDC:5.791,GBDC:6.000},
+    {d:"2/5/25",ARCC:5.840,TCPC:5.790,OBDC:5.715,GBDC:5.795},
+    {d:"2/10/25",ARCC:5.962,TCPC:5.898,OBDC:5.817,GBDC:5.873},
+    {d:"2/15/25",ARCC:5.906,TCPC:5.885,OBDC:5.789,GBDC:5.866,TSLX:5.808},
+    {d:"2/20/25",ARCC:5.942,TCPC:5.868,OBDC:5.809,GBDC:5.890,TSLX:5.775},
+    {d:"2/25/25",ARCC:5.785,TCPC:5.694,OBDC:5.682,GBDC:5.632,TSLX:5.686},
+    {d:"3/2/25",ARCC:5.789,TCPC:5.795,OBDC:5.639,GBDC:5.560,TSLX:5.620},
+    {d:"3/7/25",ARCC:5.901,TCPC:6.457,OBDC:5.734,GBDC:5.723,TSLX:5.745},
+    {d:"3/12/25",ARCC:5.976,TCPC:6.536,OBDC:5.841,GBDC:5.778,TSLX:5.902},
+    {d:"3/17/25",ARCC:6.086,TCPC:6.636,OBDC:5.925,GBDC:5.940,TSLX:5.942},
+    {d:"3/22/25",ARCC:5.981,TCPC:6.944,OBDC:5.861,GBDC:5.860,TSLX:5.903},
+    {d:"3/27/25",ARCC:6.088,TCPC:7.057,OBDC:5.881,GBDC:5.961,TSLX:5.951},
+    {d:"4/1/25",ARCC:5.900,TCPC:6.901,OBDC:5.855,GBDC:5.860,TSLX:5.864},
+    {d:"4/6/25",ARCC:6.276,TCPC:6.960,OBDC:6.120,GBDC:6.061,TSLX:6.126},
+    {d:"4/11/25",ARCC:6.803,TCPC:7.965,OBDC:6.899,GBDC:6.616,TSLX:6.708},
+    {d:"4/16/25",ARCC:6.070,TCPC:7.434,OBDC:6.463,GBDC:6.269,TSLX:6.159},
+    {d:"4/21/25",ARCC:6.388,TCPC:7.585,OBDC:6.428,GBDC:6.256,TSLX:6.251},
+    {d:"4/26/25",ARCC:6.120,TCPC:7.078,OBDC:6.224,GBDC:6.031,TSLX:5.986},
+    {d:"5/1/25",ARCC:6.263,TCPC:6.978,OBDC:6.235,GBDC:6.037,TSLX:5.986},
+    {d:"5/6/25",ARCC:6.397,TCPC:7.045,OBDC:6.312,GBDC:6.068,TSLX:6.049},
+    {d:"5/11/25",ARCC:6.426,TCPC:7.072,OBDC:6.351,GBDC:6.168,TSLX:6.126},
+    {d:"5/16/25",ARCC:6.256,TCPC:6.981,OBDC:6.251,GBDC:5.916,TSLX:5.924},
+    {d:"5/21/25",ARCC:6.265,TCPC:6.977,OBDC:6.236,GBDC:6.074,TSLX:5.894},
+    {d:"5/26/25",ARCC:6.250,TCPC:6.834,OBDC:6.169,GBDC:5.857,TSLX:5.866},
+    {d:"5/31/25",ARCC:6.066,TCPC:6.598,OBDC:5.972,GBDC:5.748,TSLX:5.715},
+    {d:"6/5/25",ARCC:6.041,TCPC:6.453,OBDC:5.903,GBDC:5.700,TSLX:5.755},
+    {d:"6/10/25",ARCC:6.285,TCPC:6.507,OBDC:6.042,GBDC:5.841,TSLX:5.789},
+    {d:"6/15/25",ARCC:6.048,TCPC:6.295,OBDC:6.030,GBDC:5.849,TSLX:5.743},
+    {d:"6/20/25",ARCC:6.014,TCPC:6.338,OBDC:5.970,GBDC:5.806,TSLX:5.685},
+    {d:"6/25/25",ARCC:5.954,TCPC:6.084,OBDC:5.868,GBDC:5.664,TSLX:5.607},
+    {d:"6/30/25",ARCC:5.859,TCPC:5.976,OBDC:5.783,GBDC:5.624,TSLX:5.551},
+    {d:"7/5/25",ARCC:5.871,TCPC:6.127,OBDC:5.867,GBDC:5.752,TSLX:5.660},
+    {d:"7/10/25",ARCC:5.820,TCPC:6.080,OBDC:5.809,GBDC:5.737,TSLX:5.658},
+    {d:"7/15/25",ARCC:5.979,TCPC:6.113,OBDC:5.927,GBDC:5.811,TSLX:5.756},
+    {d:"7/20/25",ARCC:5.799,TCPC:5.987,OBDC:5.855,GBDC:5.664,TSLX:5.650},
+    {d:"7/25/25",ARCC:5.821,TCPC:5.891,OBDC:5.775,GBDC:5.598,TSLX:5.572},
+    {d:"7/30/25",ARCC:5.840,TCPC:5.961,OBDC:5.878,GBDC:5.543,TSLX:5.575},
+    {d:"8/4/25",ARCC:5.737,TCPC:5.861,OBDC:5.709,GBDC:5.416,TSLX:5.385},
+    {d:"8/9/25",ARCC:5.748,TCPC:5.879,OBDC:5.721,GBDC:5.487,TSLX:5.478},
+    {d:"8/14/25",ARCC:5.691,TCPC:5.818,OBDC:5.632,GBDC:5.433,TSLX:5.422},
+    {d:"8/19/25",ARCC:5.650,TCPC:5.946,OBDC:5.590,GBDC:5.383,TSLX:5.410},
+    {d:"8/24/25",ARCC:5.594,TCPC:5.998,OBDC:5.508,GBDC:5.315,TSLX:5.361},
+    {d:"8/29/25",ARCC:5.540,TCPC:6.047,OBDC:5.493,GBDC:5.282,TSLX:5.328},
+    {d:"9/3/25",ARCC:5.542,TCPC:6.025,OBDC:5.464,GBDC:5.340,TSLX:5.335},
+    {d:"9/8/25",ARCC:5.338,TCPC:5.830,OBDC:5.309,GBDC:5.203,TSLX:5.202},
+    {d:"9/13/25",ARCC:5.348,TCPC:5.844,OBDC:5.293,GBDC:5.232,TSLX:5.212},
+    {d:"9/18/25",ARCC:5.340,TCPC:5.846,OBDC:5.280,GBDC:5.254,TSLX:5.235},
+    {d:"9/23/25",ARCC:5.318,TCPC:5.833,OBDC:5.213,GBDC:5.252,TSLX:5.187},
+    {d:"9/28/25",ARCC:5.450,TCPC:5.979,OBDC:5.329,GBDC:5.375,TSLX:5.289},
+    {d:"10/3/25",ARCC:5.430,TCPC:5.927,OBDC:5.333,BXSL:5.265,GBDC:5.290,TSLX:5.257},
+    {d:"10/8/25",ARCC:5.596,TCPC:6.180,OBDC:5.434,BXSL:5.358,GBDC:5.449,TSLX:5.332},
+    {d:"10/13/25",ARCC:5.734,TCPC:6.470,OBDC:5.657,BXSL:5.474,GBDC:5.706,TSLX:5.436},
+    {d:"10/18/25",ARCC:5.524,TCPC:6.481,OBDC:5.444,BXSL:5.373,GBDC:5.480,TSLX:5.377},
+    {d:"10/23/25",ARCC:5.544,TCPC:6.575,OBDC:5.454,BXSL:5.368,GBDC:5.484,TSLX:5.304},
+    {d:"10/28/25",ARCC:5.484,TCPC:6.519,OBDC:5.411,BXSL:5.302,GBDC:5.378,TSLX:5.230},
+    {d:"11/2/25",ARCC:5.615,TCPC:6.539,OBDC:5.497,BXSL:5.467,GBDC:5.536,TSLX:5.369},
+    {d:"11/7/25",ARCC:5.676,TCPC:6.553,OBDC:5.589,BXSL:5.493,GBDC:5.470,TSLX:5.389},
+    {d:"11/12/25",ARCC:5.695,TCPC:6.553,OBDC:5.556,BXSL:5.486,GBDC:5.426,TSLX:5.350},
+    {d:"11/17/25",ARCC:5.824,TCPC:6.688,OBDC:5.738,BXSL:5.614,GBDC:5.550,TSLX:5.445},
+    {d:"11/22/25",ARCC:5.776,TCPC:6.706,OBDC:5.832,BXSL:5.577,GBDC:5.489,TSLX:5.360},
+    {d:"11/27/25",ARCC:5.536,TCPC:6.438,OBDC:5.696,BXSL:5.342,GBDC:5.358,TSLX:5.282},
+    {d:"12/2/25",ARCC:5.551,TCPC:6.493,OBDC:5.534,BXSL:5.388,GBDC:5.400,TSLX:5.350},
+    {d:"12/7/25",ARCC:5.579,TCPC:6.525,OBDC:5.586,BXSL:5.332,GBDC:5.393,TSLX:5.341},
+    {d:"12/12/25",ARCC:5.691,TCPC:6.705,OBDC:5.672,BXSL:5.507,GBDC:5.427,TSLX:5.375},
+    {d:"12/17/25",ARCC:5.683,TCPC:6.701,OBDC:5.752,BXSL:5.455,GBDC:5.435,TSLX:5.331},
+    {d:"12/22/25",ARCC:5.672,TCPC:6.764,OBDC:5.722,BXSL:5.460,GBDC:5.372,TSLX:5.359},
+    {d:"12/27/25",ARCC:5.570,TCPC:6.737,OBDC:5.591,BXSL:5.404,GBDC:5.314,TSLX:5.353},
+    {d:"1/1/26",ARCC:5.613,TCPC:6.762,OBDC:5.619,BXSL:5.410,GBDC:5.308,TSLX:5.381},
+    {d:"1/6/26",ARCC:5.566,TCPC:6.663,OBDC:5.603,BXSL:5.405,GBDC:5.206,TSLX:5.349},
+    {d:"1/11/26",ARCC:5.614,TCPC:6.689,OBDC:5.680,BXSL:5.448,GBDC:5.262,TSLX:5.423},
+    {d:"1/16/26",ARCC:5.598,TCPC:6.567,OBDC:5.646,OTF:6.338,BXSL:5.499,GBDC:5.254,TSLX:5.433},
+    {d:"1/21/26",ARCC:5.587,TCPC:6.516,OBDC:5.598,OTF:6.338,BXSL:5.493,GBDC:5.242,TSLX:5.427},
+    {d:"1/26/26",ARCC:5.674,TCPC:7.234,OBDC:5.635,OTF:6.380,BXSL:5.582,GBDC:5.309,TSLX:5.413},
+    {d:"1/31/26",ARCC:5.679,TCPC:7.201,OBDC:5.560,OTF:6.486,BXSL:5.620,GBDC:5.225,TSLX:5.360},
+    {d:"2/5/26",ARCC:5.854,TCPC:7.188,OBDC:5.819,OTF:6.630,BXSL:5.683,GBDC:5.498,TSLX:5.636},
+    {d:"2/10/26",ARCC:5.710,TCPC:7.143,OBDC:5.704,OTF:6.515,BXSL:5.633,GBDC:5.485,TSLX:5.541},
+    {d:"2/15/26",ARCC:5.631,TCPC:6.842,OBDC:5.605,OTF:6.464,BXSL:5.549,GBDC:5.443,TSLX:5.524},
+    {d:"2/20/26",ARCC:5.695,TCPC:6.808,OBDC:5.870,OTF:6.789,BXSL:5.724,GBDC:5.631,TSLX:5.616},
+    {d:"2/25/26",ARCC:5.777,TCPC:6.834,OBDC:6.004,OTF:6.879,BXSL:5.650,GBDC:5.708,TSLX:5.679},
+    {d:"3/2/26",ARCC:6.064,TCPC:6.970,OBDC:6.353,OTF:7.498,BXSL:6.030,GBDC:6.178,TSLX:5.993},
+    {d:"3/7/26",ARCC:6.004,TCPC:7.471,OBDC:6.404,OTF:7.434,BXSL:5.863,GBDC:6.067,TSLX:5.972},
+    {d:"3/12/26",ARCC:6.143,TCPC:7.655,OBDC:6.646,OTF:7.731,BXSL:6.138,GBDC:6.296,TSLX:6.105},
+    {d:"3/15/26",ARCC:6.213,TCPC:7.798,OBDC:6.607,OTF:7.721,BXSL:6.171,GBDC:6.294,TSLX:6.122}
+        ];
+        return (
+          <>
+            <ResponsiveContainer width="100%" height={360}>
+              <ComposedChart data={bondYTW} margin={{ top: 10, right: 20, bottom: 10, left: 10 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke={C.frost} />
+                <XAxis dataKey="d" tick={{ fontSize: 7, fontFamily: mono, fill: C.muted }} interval={Math.floor(bondYTW.length / 10)} />
+                <YAxis tick={{ fontSize: 9, fontFamily: mono, fill: C.muted }} domain={[0, "auto"]} tickFormatter={v => `${v.toFixed(1)}%`} />
+                <Tooltip contentStyle={{ fontFamily: mono, fontSize: 10 }} formatter={(v, name) => [`${Number(v).toFixed(2)}%`, name]} />
+                {(() => { const find = (m,y) => { const match = bondYTW.find(r => { const p = r.d.split("/"); return parseInt(p[0])===m && parseInt(p[2])===y; }); return match ? match.d : null; }; const tariff = find(4,25); const peak = find(7,25); const ai = find(1,26); return (<>{tariff && <ReferenceLine x={tariff} stroke={C.amber} strokeDasharray="4 4" strokeWidth={1.5} label={{ value: "Tariff Shock", position: "insideTopLeft", fontSize: 8, fill: C.amber, fontFamily: mono, fontWeight: 700 }} />}{peak && <ReferenceLine x={peak} stroke={C.green} strokeDasharray="4 4" strokeWidth={1.5} label={{ value: "Peak SOFR / Soft Landing", position: "insideBottomRight", fontSize: 7, fill: C.green, fontFamily: mono, fontWeight: 700 }} />}{ai && <ReferenceLine x={ai} stroke={C.red} strokeDasharray="4 4" strokeWidth={1.5} label={{ value: "AI Selloff", position: "insideTopLeft", fontSize: 8, fill: C.red, fontFamily: mono, fontWeight: 700 }} />}</>); })()}
+                {all.map(p => (
+                  <Line key={p.ticker} type="monotone" dataKey={p.ticker} stroke={p.color} strokeWidth={1.5} dot={false} name={p.ticker} connectNulls />
+                ))}
+              </ComposedChart>
+            </ResponsiveContainer>
+            <div style={{ display: "flex", gap: 12, flexWrap: "wrap", justifyContent: "center", marginTop: 6, marginBottom: 20 }}>
+              {all.map(p => {
+                const pts = bondYTW.filter(r => r[p.ticker] != null);
+                const cur = pts.length > 0 ? pts[pts.length - 1][p.ticker] : null;
+                return cur ? (
+                  <span key={p.ticker} style={{ fontFamily: mono, fontSize: 10 }}>
+                    <span style={{ display: "inline-block", width: 10, height: 3, background: p.color, marginRight: 4, verticalAlign: "middle" }}></span>
+                    <span style={{ color: p.color, fontWeight: 700 }}>{p.ticker}</span>
+                    <span style={{ color: C.navy, marginLeft: 4 }}>{cur.toFixed(2)}%</span>
+                  </span>
+                ) : null;
+              })}
+            </div>
+          </>
+        );
+      })()}
+
+      {/* Unsecured Bond Bid Price Chart */}
+      <div style={{ fontFamily: mono, fontSize: 10, fontWeight: 700, color: C.navy, textTransform: "uppercase", letterSpacing: "0.06em", padding: "6px 8px", background: C.frost, borderLeft: `3px solid ${C.navy}`, marginBottom: 8 }}>
+        Unsecured Bond Bid Price (Weekly)
+      </div>
+      <div style={{ fontFamily: mono, fontSize: 9, color: C.muted, margin: "-4px 0 8px 0", lineHeight: 1.6 }}>
+        ARCC 5.250% Apr'31 (BBB-) | TCPC 6.950% Nov'28 (BBB-) | OBDC 5.950% Sep'28 (BBB) | OTF 6.250% Jan'31 (BBB) | BXSL 5.100% Jan'30 (BBB) | GBDC 6.000% Jan'29 (BBB-) | TSLX 5.625% Feb'30 (BBB-)
+      </div>
+      {(() => {
+        const bondBid = [
+    {d:"1/18/24",OBDC:98.69},
+    {d:"1/23/24",OBDC:98.88},
+    {d:"1/28/24",OBDC:98.91,GBDC:98.56},
+    {d:"2/2/24",OBDC:97.99,GBDC:98.16},
+    {d:"2/7/24",OBDC:98.39,GBDC:97.88},
+    {d:"2/12/24",OBDC:98.10,GBDC:97.81},
+    {d:"2/17/24",OBDC:97.64,GBDC:97.14},
+    {d:"2/22/24",OBDC:97.83,GBDC:97.26},
+    {d:"2/27/24",OBDC:97.60,GBDC:97.13},
+    {d:"3/3/24",OBDC:97.42,GBDC:97.41},
+    {d:"3/8/24",OBDC:98.65,GBDC:97.65},
+    {d:"3/13/24",OBDC:99.43,GBDC:97.56},
+    {d:"3/18/24",OBDC:98.73,GBDC:97.22},
+    {d:"3/23/24",OBDC:99.30,GBDC:98.11},
+    {d:"3/28/24",OBDC:99.30,GBDC:98.43},
+    {d:"4/2/24",OBDC:98.70,GBDC:97.50},
+    {d:"4/7/24",OBDC:98.85,GBDC:97.61},
+    {d:"4/12/24",OBDC:97.84,GBDC:97.35},
+    {d:"4/17/24",OBDC:97.68,GBDC:96.73},
+    {d:"4/22/24",OBDC:97.87,GBDC:96.48},
+    {d:"4/27/24",OBDC:98.03,GBDC:96.58},
+    {d:"5/2/24",OBDC:98.87,GBDC:97.21},
+    {d:"5/7/24",OBDC:99.25,GBDC:97.93},
+    {d:"5/12/24",OBDC:98.94,GBDC:97.89},
+    {d:"5/17/24",OBDC:99.38,GBDC:98.22},
+    {d:"5/22/24",TCPC:98.41,OBDC:99.13,GBDC:98.06},
+    {d:"5/27/24",TCPC:98.43,OBDC:98.92,GBDC:97.70},
+    {d:"6/1/24",TCPC:98.50,OBDC:99.13,GBDC:97.90},
+    {d:"6/6/24",TCPC:98.95,OBDC:99.66,GBDC:98.72},
+    {d:"6/11/24",TCPC:98.41,OBDC:99.07,GBDC:98.12},
+    {d:"6/16/24",TCPC:98.18,OBDC:99.39,GBDC:98.56},
+    {d:"6/21/24",TCPC:97.68,OBDC:98.58,GBDC:98.07},
+    {d:"6/26/24",TCPC:97.20,OBDC:98.22,GBDC:97.86},
+    {d:"7/1/24",TCPC:97.41,OBDC:98.30,GBDC:97.95},
+    {d:"7/6/24",TCPC:99.25,OBDC:99.33,GBDC:98.88},
+    {d:"7/11/24",TCPC:99.36,OBDC:99.51,GBDC:99.20},
+    {d:"7/16/24",TCPC:99.61,OBDC:99.64,GBDC:99.32},
+    {d:"7/21/24",TCPC:99.30,OBDC:99.35,GBDC:98.90},
+    {d:"7/26/24",TCPC:99.71,OBDC:99.74,GBDC:99.10},
+    {d:"7/31/24",TCPC:100.31,OBDC:100.54,GBDC:99.64},
+    {d:"8/5/24",TCPC:100.46,OBDC:100.35,GBDC:99.97},
+    {d:"8/10/24",TCPC:100.00,OBDC:100.20,GBDC:99.89},
+    {d:"8/15/24",TCPC:100.02,OBDC:100.86,GBDC:100.15},
+    {d:"8/20/24",TCPC:101.17,OBDC:101.28,GBDC:100.77},
+    {d:"8/25/24",TCPC:101.63,OBDC:101.76,GBDC:101.27},
+    {d:"8/30/24",TCPC:101.84,OBDC:101.78,GBDC:100.98},
+    {d:"9/4/24",TCPC:101.99,OBDC:102.28,GBDC:101.38},
+    {d:"9/9/24",TCPC:102.10,OBDC:102.72,GBDC:101.94},
+    {d:"9/14/24",TCPC:102.41,OBDC:102.61,GBDC:102.07},
+    {d:"9/19/24",TCPC:102.38,OBDC:102.73,GBDC:102.05},
+    {d:"9/24/24",TCPC:102.32,OBDC:102.78,GBDC:101.83},
+    {d:"9/29/24",TCPC:102.05,OBDC:102.60,GBDC:101.79},
+    {d:"10/4/24",TCPC:101.26,OBDC:101.34,GBDC:101.15},
+    {d:"10/9/24",TCPC:100.95,OBDC:101.32,GBDC:100.88},
+    {d:"10/16/24",TCPC:101.32,OBDC:101.35,GBDC:101.37},
+    {d:"10/21/24",TCPC:100.72,OBDC:100.84,GBDC:100.81},
+    {d:"10/26/24",TCPC:100.88,OBDC:100.61,GBDC:100.25},
+    {d:"10/31/24",TCPC:100.54,OBDC:100.16,GBDC:99.97},
+    {d:"11/5/24",TCPC:101.06,OBDC:100.28,GBDC:100.35},
+    {d:"11/10/24",TCPC:101.95,OBDC:100.75,GBDC:100.90},
+    {d:"11/15/24",TCPC:101.78,OBDC:100.15,GBDC:100.47},
+    {d:"11/20/24",TCPC:102.07,OBDC:100.10,GBDC:100.32},
+    {d:"11/25/24",TCPC:102.49,OBDC:100.58,GBDC:100.46},
+    {d:"11/30/24",TCPC:103.12,OBDC:100.93,GBDC:100.72},
+    {d:"12/5/24",TCPC:103.46,OBDC:101.02,GBDC:100.90},
+    {d:"12/10/24",TCPC:103.68,OBDC:101.15,GBDC:100.96},
+    {d:"12/15/24",TCPC:103.51,OBDC:100.65,GBDC:100.42},
+    {d:"12/20/24",TCPC:103.31,OBDC:100.32,GBDC:99.74},
+    {d:"12/27/24",TCPC:102.71,OBDC:100.15,GBDC:99.53},
+    {d:"1/1/25",ARCC:99.01,TCPC:103.85,OBDC:100.28,GBDC:99.89},
+    {d:"1/6/25",ARCC:98.94,TCPC:104.02,OBDC:100.20,GBDC:99.63},
+    {d:"1/11/25",ARCC:97.92,TCPC:103.32,OBDC:99.73,GBDC:98.90},
+    {d:"1/16/25",ARCC:98.44,TCPC:103.78,OBDC:100.69,GBDC:99.79},
+    {d:"1/21/25",ARCC:98.84,TCPC:104.23,OBDC:100.46,GBDC:99.87},
+    {d:"1/26/25",ARCC:98.61,TCPC:104.10,OBDC:100.36,GBDC:99.88},
+    {d:"1/31/25",ARCC:99.22,TCPC:104.09,OBDC:100.56,GBDC:100.00},
+    {d:"2/5/25",ARCC:99.75,TCPC:104.30,OBDC:100.83,GBDC:100.78},
+    {d:"2/10/25",ARCC:99.05,TCPC:103.87,OBDC:100.47,GBDC:100.48},
+    {d:"2/15/25",ARCC:99.37,TCPC:103.91,OBDC:100.57,GBDC:100.50,TSLX:99.08},
+    {d:"2/20/25",ARCC:99.17,TCPC:103.96,OBDC:100.49,GBDC:100.41,TSLX:99.24},
+    {d:"2/25/25",ARCC:100.06,TCPC:104.61,OBDC:100.94,GBDC:101.39,TSLX:99.72},
+    {d:"3/2/25",ARCC:100.04,TCPC:104.21,OBDC:101.09,GBDC:101.65,TSLX:100.02},
+    {d:"3/7/25",ARCC:99.40,TCPC:101.76,OBDC:100.76,GBDC:101.03,TSLX:99.45},
+    {d:"3/12/25",ARCC:98.98,TCPC:101.47,OBDC:100.38,GBDC:100.82,TSLX:98.73},
+    {d:"3/17/25",ARCC:98.37,TCPC:101.11,OBDC:100.09,GBDC:100.22,TSLX:98.55},
+    {d:"3/22/25",ARCC:98.95,TCPC:100.01,OBDC:100.31,GBDC:100.51,TSLX:98.73},
+    {d:"3/27/25",ARCC:98.36,TCPC:99.61,OBDC:100.24,GBDC:100.14,TSLX:98.51},
+    {d:"4/1/25",ARCC:99.41,TCPC:100.16,OBDC:100.33,GBDC:100.51,TSLX:98.91},
+    {d:"4/6/25",ARCC:97.33,TCPC:99.95,OBDC:99.41,GBDC:99.76,TSLX:97.74},
+    {d:"4/11/25",ARCC:94.52,TCPC:96.47,OBDC:96.78,GBDC:97.73,TSLX:95.20},
+    {d:"4/16/25",ARCC:98.47,TCPC:98.30,OBDC:98.25,GBDC:99.00,TSLX:97.60},
+    {d:"4/21/25",ARCC:96.74,TCPC:97.78,OBDC:98.37,GBDC:99.05,TSLX:97.20},
+    {d:"4/26/25",ARCC:98.20,TCPC:99.54,OBDC:99.06,GBDC:99.88,TSLX:98.38},
+    {d:"5/1/25",ARCC:97.42,TCPC:99.89,OBDC:99.03,GBDC:99.85,TSLX:98.38},
+    {d:"5/6/25",ARCC:96.70,TCPC:99.66,OBDC:98.77,GBDC:99.74,TSLX:98.10},
+    {d:"5/11/25",ARCC:96.56,TCPC:99.57,OBDC:98.64,GBDC:99.38,TSLX:97.77},
+    {d:"5/16/25",ARCC:97.48,TCPC:99.89,OBDC:98.98,GBDC:100.30,TSLX:98.66},
+    {d:"5/21/25",ARCC:97.43,TCPC:99.91,OBDC:99.03,GBDC:99.72,TSLX:98.80},
+    {d:"5/26/25",ARCC:97.52,TCPC:100.40,OBDC:99.26,GBDC:100.50,TSLX:98.92},
+    {d:"5/31/25",ARCC:98.51,TCPC:101.20,OBDC:99.92,GBDC:100.89,TSLX:99.59},
+    {d:"6/5/25",ARCC:98.66,TCPC:101.69,OBDC:100.14,GBDC:101.06,TSLX:99.42},
+    {d:"6/10/25",ARCC:97.34,TCPC:101.50,OBDC:99.68,GBDC:100.56,TSLX:99.27},
+    {d:"6/15/25",ARCC:98.62,TCPC:102.22,OBDC:99.72,GBDC:100.53,TSLX:99.47},
+    {d:"6/20/25",ARCC:98.81,TCPC:102.06,OBDC:99.92,GBDC:100.68,TSLX:99.73},
+    {d:"6/25/25",ARCC:99.14,TCPC:102.93,OBDC:100.26,GBDC:101.18,TSLX:100.08},
+    {d:"6/30/25",ARCC:99.66,TCPC:103.29,OBDC:100.53,GBDC:101.32,TSLX:100.32},
+    {d:"7/5/25",ARCC:99.59,TCPC:102.76,OBDC:100.26,GBDC:100.86,TSLX:99.84},
+    {d:"7/10/25",ARCC:99.87,TCPC:102.91,OBDC:100.45,GBDC:100.92,TSLX:99.85},
+    {d:"7/15/25",ARCC:99.01,TCPC:102.79,OBDC:100.07,GBDC:100.66,TSLX:99.42},
+    {d:"7/20/25",ARCC:99.99,TCPC:103.21,OBDC:100.30,GBDC:101.17,TSLX:99.89},
+    {d:"7/25/25",ARCC:99.87,TCPC:103.52,OBDC:100.55,GBDC:101.39,TSLX:100.23},
+    {d:"7/30/25",ARCC:99.77,TCPC:103.28,OBDC:100.22,GBDC:101.58,TSLX:100.22},
+    {d:"8/4/25",ARCC:100.33,TCPC:103.60,OBDC:100.76,GBDC:102.01,TSLX:101.03},
+    {d:"8/9/25",ARCC:100.27,TCPC:103.52,OBDC:100.72,GBDC:101.75,TSLX:100.63},
+    {d:"8/14/25",ARCC:100.57,TCPC:103.72,OBDC:101.00,GBDC:101.94,TSLX:100.87},
+    {d:"8/19/25",ARCC:100.80,TCPC:103.28,OBDC:101.13,GBDC:102.10,TSLX:100.92},
+    {d:"8/24/25",ARCC:101.09,TCPC:103.09,OBDC:101.38,GBDC:102.33,TSLX:101.13},
+    {d:"8/29/25",ARCC:101.38,TCPC:102.92,OBDC:101.42,GBDC:102.43,TSLX:101.26},
+    {d:"9/3/25",ARCC:101.37,TCPC:102.99,OBDC:101.51,GBDC:102.23,TSLX:101.23},
+    {d:"9/8/25",ARCC:102.46,TCPC:103.62,OBDC:101.99,GBDC:102.69,TSLX:101.79},
+    {d:"9/13/25",ARCC:102.40,TCPC:103.56,OBDC:102.03,GBDC:102.58,TSLX:101.75},
+    {d:"9/18/25",ARCC:102.44,TCPC:103.54,OBDC:102.07,GBDC:102.50,TSLX:101.64},
+    {d:"9/23/25",ARCC:102.55,TCPC:103.57,OBDC:102.27,GBDC:102.50,TSLX:101.84},
+    {d:"9/28/25",ARCC:101.84,TCPC:103.09,OBDC:101.90,GBDC:102.07,TSLX:101.40},
+    {d:"10/3/25",ARCC:101.94,TCPC:103.24,OBDC:101.87,BXSL:99.27,GBDC:102.35,TSLX:101.53},
+    {d:"10/8/25",ARCC:101.06,TCPC:102.42,OBDC:101.56,BXSL:98.87,GBDC:101.81,TSLX:101.21},
+    {d:"10/13/25",ARCC:100.34,TCPC:101.49,OBDC:100.88,BXSL:98.42,GBDC:100.95,TSLX:100.78},
+    {d:"10/18/25",ARCC:101.44,TCPC:101.45,OBDC:101.52,BXSL:98.88,GBDC:101.69,TSLX:101.02},
+    {d:"10/23/25",ARCC:101.33,TCPC:101.16,OBDC:101.48,BXSL:98.90,GBDC:101.68,TSLX:101.32},
+    {d:"10/28/25",ARCC:101.64,TCPC:101.33,OBDC:101.61,BXSL:99.20,GBDC:102.02,TSLX:101.63},
+    {d:"11/2/25",ARCC:100.95,TCPC:101.26,OBDC:101.34,BXSL:98.46,GBDC:101.50,TSLX:101.05},
+    {d:"11/7/25",ARCC:100.63,TCPC:101.22,OBDC:101.06,BXSL:98.35,GBDC:101.70,TSLX:100.96},
+    {d:"11/12/25",ARCC:100.53,TCPC:101.22,OBDC:101.15,BXSL:98.39,GBDC:101.84,TSLX:101.12},
+    {d:"11/17/25",ARCC:99.87,TCPC:100.80,OBDC:100.61,BXSL:97.82,GBDC:101.44,TSLX:100.73},
+    {d:"11/22/25",ARCC:100.12,TCPC:100.74,OBDC:100.34,BXSL:97.99,GBDC:101.63,TSLX:101.07},
+    {d:"11/27/25",ARCC:101.35,TCPC:101.56,OBDC:100.73,BXSL:99.03,GBDC:102.05,TSLX:101.39},
+    {d:"12/2/25",ARCC:101.27,TCPC:101.38,OBDC:101.20,BXSL:98.83,GBDC:101.90,TSLX:101.11},
+    {d:"12/7/25",ARCC:101.12,TCPC:101.28,OBDC:101.05,BXSL:99.08,GBDC:101.92,TSLX:101.14},
+    {d:"12/12/25",ARCC:100.55,TCPC:100.73,OBDC:100.79,BXSL:98.32,GBDC:101.81,TSLX:101.00},
+    {d:"12/17/25",ARCC:100.59,TCPC:100.74,OBDC:100.56,BXSL:98.55,GBDC:101.78,TSLX:101.18},
+    {d:"12/22/25",ARCC:100.64,TCPC:100.55,OBDC:100.64,BXSL:98.53,GBDC:101.97,TSLX:101.06},
+    {d:"12/27/25",ARCC:101.16,TCPC:100.62,OBDC:101.01,BXSL:98.78,GBDC:102.14,TSLX:101.08},
+    {d:"1/1/26",ARCC:100.94,TCPC:100.55,OBDC:100.93,BXSL:98.75,GBDC:102.16,TSLX:100.97},
+    {d:"1/6/26",ARCC:101.18,TCPC:100.84,OBDC:100.97,BXSL:98.78,GBDC:102.47,TSLX:101.09},
+    {d:"1/11/26",ARCC:100.93,TCPC:100.76,OBDC:100.75,BXSL:98.59,GBDC:102.29,TSLX:100.80},
+    {d:"1/16/26",ARCC:101.01,TCPC:101.11,OBDC:100.84,OTF:99.08,BXSL:98.38,GBDC:102.30,TSLX:100.75},
+    {d:"1/21/26",ARCC:101.07,TCPC:101.26,OBDC:100.97,OTF:99.08,BXSL:98.41,GBDC:102.33,TSLX:100.78},
+    {d:"1/26/26",ARCC:100.63,TCPC:99.16,OBDC:100.87,OTF:98.92,BXSL:98.03,GBDC:102.12,TSLX:100.83},
+    {d:"1/31/26",ARCC:100.60,TCPC:99.25,OBDC:101.07,OTF:98.48,BXSL:97.87,GBDC:102.37,TSLX:101.04},
+    {d:"2/5/26",ARCC:99.72,TCPC:99.29,OBDC:100.36,OTF:97.89,BXSL:97.61,GBDC:101.52,TSLX:99.96},
+    {d:"2/10/26",ARCC:100.45,TCPC:99.42,OBDC:100.67,OTF:98.37,BXSL:97.82,GBDC:101.55,TSLX:100.33},
+    {d:"2/15/26",ARCC:100.84,TCPC:100.30,OBDC:100.94,OTF:98.58,BXSL:98.19,GBDC:101.67,TSLX:100.39},
+    {d:"2/20/26",ARCC:100.52,TCPC:100.39,OBDC:100.22,OTF:97.26,BXSL:97.45,GBDC:101.10,TSLX:100.03},
+    {d:"2/25/26",ARCC:100.11,TCPC:100.32,OBDC:99.85,OTF:96.90,BXSL:97.77,GBDC:100.86,TSLX:99.79},
+    {d:"3/2/26",ARCC:98.69,TCPC:99.93,OBDC:98.90,OTF:94.45,BXSL:96.20,GBDC:99.46,TSLX:98.58},
+    {d:"3/7/26",ARCC:98.98,TCPC:98.52,OBDC:98.77,OTF:94.72,BXSL:96.89,GBDC:99.79,TSLX:98.66},
+    {d:"3/12/26",ARCC:98.30,TCPC:98.01,OBDC:98.13,OTF:93.58,BXSL:95.78,GBDC:99.11,TSLX:98.16},
+    {d:"3/15/26",ARCC:97.96,TCPC:97.62,OBDC:98.24,OTF:93.63,BXSL:95.65,GBDC:99.12,TSLX:98.10}
+        ];
+        return (
+          <>
+            <ResponsiveContainer width="100%" height={360}>
+              <ComposedChart data={bondBid} margin={{ top: 10, right: 20, bottom: 10, left: 10 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke={C.frost} />
+                <XAxis dataKey="d" tick={{ fontSize: 7, fontFamily: mono, fill: C.muted }} interval={Math.floor(bondBid.length / 10)} />
+                <YAxis tick={{ fontSize: 9, fontFamily: mono, fill: C.muted }} domain={[80, "auto"]} tickFormatter={v => v.toFixed(0)} />
+                <Tooltip contentStyle={{ fontFamily: mono, fontSize: 10 }} formatter={(v, name) => [Number(v).toFixed(2), name]} />
+                <ReferenceLine y={100} stroke={C.navy} strokeWidth={1} strokeDasharray="6 3" label={{ value: "Par", position: "insideTopLeft", fontSize: 8, fill: C.navy, fontFamily: mono }} />
+                {(() => { const find = (m,y) => { const match = bondBid.find(r => { const p = r.d.split("/"); return parseInt(p[0])===m && parseInt(p[2])===y; }); return match ? match.d : null; }; const tariff = find(4,25); const peak = find(7,25); const ai = find(1,26); return (<>{tariff && <ReferenceLine x={tariff} stroke={C.amber} strokeDasharray="4 4" strokeWidth={1.5} label={{ value: "Tariff Shock", position: "insideTopLeft", fontSize: 8, fill: C.amber, fontFamily: mono, fontWeight: 700 }} />}{peak && <ReferenceLine x={peak} stroke={C.green} strokeDasharray="4 4" strokeWidth={1.5} label={{ value: "Peak SOFR / Soft Landing", position: "insideBottomRight", fontSize: 7, fill: C.green, fontFamily: mono, fontWeight: 700 }} />}{ai && <ReferenceLine x={ai} stroke={C.red} strokeDasharray="4 4" strokeWidth={1.5} label={{ value: "AI Selloff", position: "insideTopLeft", fontSize: 8, fill: C.red, fontFamily: mono, fontWeight: 700 }} />}</>); })()}
+                {all.map(p => (
+                  <Line key={p.ticker} type="monotone" dataKey={p.ticker} stroke={p.color} strokeWidth={1.5} dot={false} name={p.ticker} connectNulls />
+                ))}
+              </ComposedChart>
+            </ResponsiveContainer>
+            <div style={{ display: "flex", gap: 12, flexWrap: "wrap", justifyContent: "center", marginTop: 6, marginBottom: 20 }}>
+              {all.map(p => {
+                const pts = bondBid.filter(r => r[p.ticker] != null);
+                const cur = pts.length > 0 ? pts[pts.length - 1][p.ticker] : null;
+                return cur ? (
+                  <span key={p.ticker} style={{ fontFamily: mono, fontSize: 10 }}>
+                    <span style={{ display: "inline-block", width: 10, height: 3, background: p.color, marginRight: 4, verticalAlign: "middle" }}></span>
+                    <span style={{ color: p.color, fontWeight: 700 }}>{p.ticker}</span>
+                    <span style={{ color: cur >= 100 ? C.green : C.red, marginLeft: 4 }}>{cur.toFixed(1)}</span>
+                  </span>
+                ) : null;
+              })}
+            </div>
+          </>
+        );
+      })()}
+
+
     </div>
   );
 }
