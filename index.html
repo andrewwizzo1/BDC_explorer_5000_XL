@@ -4508,6 +4508,240 @@ function PNavModelMod() {
 }
 
 
+// ── NII Rate Sensitivity ──
+
+
+function NIISensitivityMod() {
+  const [sofrCut, setSofrCut] = useState(100); // bps
+
+  // ── GBDC Illustrative Capital Structure ──
+  const totalAssets = 8600;   // $M
+  const totalLiab = 5500;     // $M  
+  const equity = 3100;        // $M
+  const shares = 260;         // M shares
+  const assetYield = 10.5;    // % all-in (SOFR + ~575bps)
+  const liabCost = 5.8;       // % all-in (SOFR + ~175bps)
+  const floatAssets = 0.92;   // % floating
+  const floatLiab = 0.79;     // % floating
+  const opex = 220;           // $M annual (mgmt fee + G&A + incentive)
+  const currentDiv = 0.33;    // $/qtr
+  const currentNII_Q = 0.38;  // $/qtr adj NII
+
+  // ── Compute NII impact of rate change ──
+  const cut = sofrCut / 100; // in percentage points
+
+  const assetIncomeBase = totalAssets * (assetYield / 100);
+  const assetIncomeHit = totalAssets * floatAssets * (cut / 100);
+  const assetIncomeNew = assetIncomeBase - assetIncomeHit;
+
+  const liabCostBase = totalLiab * (liabCost / 100);
+  const liabCostSaving = totalLiab * floatLiab * (cut / 100);
+  const liabCostNew = liabCostBase - liabCostSaving;
+
+  const niiBase = assetIncomeBase - liabCostBase - opex;
+  const niiNew = assetIncomeNew - liabCostNew - opex;
+  const niiImpact = niiNew - niiBase;
+  const niiImpactPS = niiImpact / shares;
+  const niiNewPS_Q = currentNII_Q + (niiImpactPS / 4);
+
+  const coverageBase = (currentNII_Q / currentDiv * 100);
+  const coverageNew = (niiNewPS_Q / currentDiv * 100);
+
+  // P/NAV impact using GBDC model: P/NAV = 98.8 + 1.16 * NII_delta
+  // NII delta from peak shifts by niiImpactPS/peak_nii * 100
+  const peakNII = 0.51; // Q1'24 peak
+  const currentDelta = ((currentNII_Q - peakNII) / peakNII) * 100; // current % from peak
+  const newDelta = (((niiNewPS_Q) - peakNII) / peakNII) * 100;
+  const pnavCurrent = 98.8 + 1.156 * currentDelta;
+  const pnavNew = 98.8 + 1.156 * newDelta;
+  const pnavImpact = pnavNew - pnavCurrent;
+
+  // ── Waterfall data ──
+  const waterfall = [
+    { label: "Asset Income\n(before)", value: assetIncomeBase, color: C.teal, type: "base" },
+    { label: "Asset Rate\nImpact", value: -assetIncomeHit, color: C.red, type: "delta" },
+    { label: "Liability Cost\n(before)", value: -liabCostBase, color: C.amber, type: "base" },
+    { label: "Liability Rate\nSaving", value: liabCostSaving, color: C.green, type: "delta" },
+    { label: "OpEx", value: -opex, color: C.muted, type: "base" },
+    { label: "Net NII\nImpact", value: niiImpact, color: niiImpact >= 0 ? C.green : C.red, type: "result" },
+  ];
+
+  // ── Stacked bar: asset income loss vs liability saving ──
+  const compData = [
+    { label: "Asset Income Lost", value: Math.abs(assetIncomeHit), color: C.red },
+    { label: "Liability Cost Saved", value: Math.abs(liabCostSaving), color: C.green },
+    { label: "Net NII Hit", value: Math.abs(niiImpact), color: C.red },
+  ];
+
+  // ── Sensitivity table: various SOFR cuts ──
+  const sensitivities = [25, 50, 75, 100, 125, 150, 200].map(bps => {
+    const c = bps / 100;
+    const aHit = totalAssets * floatAssets * (c / 100);
+    const lSave = totalLiab * floatLiab * (c / 100);
+    const net = lSave - aHit;
+    const netPS = net / shares;
+    const newQ = currentNII_Q + (netPS / 4);
+    const cov = newQ / currentDiv * 100;
+    const nd = ((newQ - peakNII) / peakNII) * 100;
+    const pn = 98.8 + 1.156 * nd;
+    const impliedPrice = 14.84 * pn / 100;
+    return {
+      bps,
+      assetHit: aHit,
+      liabSave: lSave,
+      netImpact: net,
+      netPS: netPS,
+      niiQ: newQ,
+      coverage: cov,
+      pnav: pn,
+      impliedPrice: impliedPrice,
+    };
+  });
+
+  const cell = { padding: "6px 10px", fontFamily: mono, fontSize: 10, textAlign: "right", borderBottom: `1px solid ${C.frost}` };
+  const hdr = { ...cell, fontWeight: 700, color: C.navy, borderBottom: `2px solid ${C.navy}` };
+
+  return (
+    <div style={{ maxWidth: 1000, margin: "0 auto", padding: 24, fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif' }}>
+      <div style={{ borderBottom: `3px solid ${C.navy}`, paddingBottom: 10, marginBottom: 20 }}>
+        <div style={{ fontFamily: mono, fontSize: 13, fontWeight: 700, color: C.navy, letterSpacing: "0.05em" }}>
+          Why Declining Rates Compress P/NAV
+        </div>
+        <div style={{ fontFamily: mono, fontSize: 10, color: C.muted, marginTop: 4 }}>
+          GBDC illustrative example. Both assets and liabilities are floating — but the asset pool is larger, so the net income hit falls on equity holders.
+        </div>
+      </div>
+
+      {/* ═══ THE KEY INSIGHT ═══ */}
+      <div style={{ padding: 16, background: "#FFF8E1", border: `1px solid ${C.amber}`, borderRadius: 6, marginBottom: 20, fontFamily: mono, fontSize: 11, color: C.navy, lineHeight: 1.8 }}>
+        <strong>The core mechanism:</strong> A BDC's assets (~${(totalAssets/1000).toFixed(1)}B) are larger than its liabilities (~${(totalLiab/1000).toFixed(1)}B) because the difference is equity (~${(equity/1000).toFixed(1)}B). When SOFR falls, <em>both</em> sides reprice — but the income lost on the larger asset pool exceeds the cost saved on the smaller liability pool. The net hit lands on equity holders as lower NII. NAV barely moves (the assets and liabilities are marked at fair value, which doesn't change much with floating rate repricing). But the <em>earnings power</em> of the NAV declines, so the price the market pays for that NAV — the P/NAV ratio — compresses.
+      </div>
+
+      {/* ═══ Interactive Slider ═══ */}
+      <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 20, padding: "12px 16px", background: C.frost, borderRadius: 6 }}>
+        <div style={{ fontFamily: mono, fontSize: 10, color: C.navy, fontWeight: 700, minWidth: 100 }}>SOFR Cut (bps):</div>
+        <input type="range" min="0" max="250" step="25" value={sofrCut}
+          onChange={e => setSofrCut(parseInt(e.target.value))} style={{ flex: 1 }} />
+        <div style={{ fontFamily: mono, fontSize: 18, fontWeight: 700, color: C.navy, minWidth: 60 }}>{sofrCut}bp</div>
+      </div>
+
+      {/* ═══ Side-by-Side: Asset vs Liability Impact ═══ */}
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12, marginBottom: 20 }}>
+        <div style={{ background: "#FEF2F2", border: `1px solid ${C.red}`, borderRadius: 6, padding: 14 }}>
+          <div style={{ fontFamily: mono, fontSize: 9, color: C.red, textTransform: "uppercase", fontWeight: 700, letterSpacing: "0.05em" }}>Asset Income Lost</div>
+          <div style={{ fontFamily: mono, fontSize: 22, fontWeight: 700, color: C.red, marginTop: 4 }}>−${assetIncomeHit.toFixed(0)}M</div>
+          <div style={{ fontFamily: mono, fontSize: 9, color: C.muted, marginTop: 4 }}>
+            ${(totalAssets/1000).toFixed(1)}B assets × {(floatAssets*100).toFixed(0)}% floating × {sofrCut}bp
+          </div>
+        </div>
+        <div style={{ background: "#F0FDF4", border: `1px solid ${C.green}`, borderRadius: 6, padding: 14 }}>
+          <div style={{ fontFamily: mono, fontSize: 9, color: C.green, textTransform: "uppercase", fontWeight: 700, letterSpacing: "0.05em" }}>Liability Cost Saved</div>
+          <div style={{ fontFamily: mono, fontSize: 22, fontWeight: 700, color: C.green, marginTop: 4 }}>+${liabCostSaving.toFixed(0)}M</div>
+          <div style={{ fontFamily: mono, fontSize: 9, color: C.muted, marginTop: 4 }}>
+            ${(totalLiab/1000).toFixed(1)}B liab × {(floatLiab*100).toFixed(0)}% floating × {sofrCut}bp
+          </div>
+        </div>
+        <div style={{ background: niiImpact >= 0 ? "#F0FDF4" : "#FEF2F2", border: `1px solid ${niiImpact >= 0 ? C.green : C.red}`, borderRadius: 6, padding: 14 }}>
+          <div style={{ fontFamily: mono, fontSize: 9, color: C.navy, textTransform: "uppercase", fontWeight: 700, letterSpacing: "0.05em" }}>Net NII Impact (Annual)</div>
+          <div style={{ fontFamily: mono, fontSize: 22, fontWeight: 700, color: niiImpact >= 0 ? C.green : C.red, marginTop: 4 }}>
+            {niiImpact >= 0 ? "+" : "−"}${Math.abs(niiImpact).toFixed(0)}M
+          </div>
+          <div style={{ fontFamily: mono, fontSize: 9, color: C.muted, marginTop: 4 }}>
+            = ${Math.abs(niiImpactPS).toFixed(2)}/sh annually | ${Math.abs(niiImpactPS/4).toFixed(3)}/sh quarterly
+          </div>
+        </div>
+      </div>
+
+      {/* ═══ Flow-through to P/NAV ═══ */}
+      <div style={{ fontFamily: mono, fontSize: 10, fontWeight: 700, color: C.navy, textTransform: "uppercase", letterSpacing: "0.06em", padding: "5px 8px", background: C.frost, borderLeft: `3px solid ${C.navy}`, marginBottom: 12 }}>
+        Flow-Through: SOFR → NII → Coverage → P/NAV
+      </div>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: 12, marginBottom: 24 }}>
+        {[
+          { label: "NII / Share (Qtr)", before: currentNII_Q, after: niiNewPS_Q, fmt: v => `$${v.toFixed(3)}` },
+          { label: "Dividend Coverage", before: coverageBase, after: coverageNew, fmt: v => `${v.toFixed(0)}%`, warn: v => v < 100 },
+          { label: "Model P/NAV", before: pnavCurrent, after: pnavNew, fmt: v => `${v.toFixed(1)}%` },
+          { label: "Implied Price", before: 14.84 * pnavCurrent / 100, after: 14.84 * pnavNew / 100, fmt: v => `$${v.toFixed(2)}` },
+        ].map((item, i) => (
+          <div key={i} style={{ background: "white", border: `1px solid ${C.frost}`, borderRadius: 4, padding: 12 }}>
+            <div style={{ fontFamily: mono, fontSize: 9, color: C.muted, textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: 6 }}>{item.label}</div>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
+              <div>
+                <div style={{ fontFamily: mono, fontSize: 8, color: C.muted }}>Before</div>
+                <div style={{ fontFamily: mono, fontSize: 14, fontWeight: 700, color: C.navy }}>{item.fmt(item.before)}</div>
+              </div>
+              <div style={{ fontFamily: mono, fontSize: 14, color: C.muted }}>→</div>
+              <div>
+                <div style={{ fontFamily: mono, fontSize: 8, color: C.muted }}>After {sofrCut}bp</div>
+                <div style={{ fontFamily: mono, fontSize: 14, fontWeight: 700, color: item.warn && item.warn(item.after) ? C.red : item.after < item.before ? C.red : C.green }}>
+                  {item.fmt(item.after)}
+                </div>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* ═══ Sensitivity Table ═══ */}
+      <div style={{ fontFamily: mono, fontSize: 10, fontWeight: 700, color: C.navy, textTransform: "uppercase", letterSpacing: "0.06em", padding: "5px 8px", background: C.frost, borderLeft: `3px solid ${C.navy}`, marginBottom: 8 }}>
+        SOFR Cut Sensitivity — GBDC
+      </div>
+      <table style={{ width: "100%", borderCollapse: "collapse", marginBottom: 20 }}>
+        <thead>
+          <tr>
+            <th style={{ ...hdr, textAlign: "left" }}>SOFR Cut</th>
+            <th style={hdr}>Asset Hit</th>
+            <th style={hdr}>Liab Saving</th>
+            <th style={hdr}>Net NII (ann)</th>
+            <th style={hdr}>NII/Sh (qtr)</th>
+            <th style={hdr}>Coverage</th>
+            <th style={hdr}>Model P/NAV</th>
+            <th style={hdr}>Implied Price</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr style={{ background: "#FFF8E1" }}>
+            <td style={{ ...cell, textAlign: "left", fontWeight: 700 }}>Current (0bp)</td>
+            <td style={cell}>—</td>
+            <td style={cell}>—</td>
+            <td style={cell}>—</td>
+            <td style={{ ...cell, fontWeight: 700 }}>${currentNII_Q.toFixed(3)}</td>
+            <td style={{ ...cell, fontWeight: 700, color: coverageBase >= 100 ? C.green : C.red }}>{coverageBase.toFixed(0)}%</td>
+            <td style={{ ...cell, fontWeight: 700 }}>{pnavCurrent.toFixed(1)}%</td>
+            <td style={{ ...cell, fontWeight: 700 }}>${(14.84 * pnavCurrent / 100).toFixed(2)}</td>
+          </tr>
+          {sensitivities.map((s, i) => (
+            <tr key={s.bps} style={{ background: s.bps === sofrCut ? "#EFF6FF" : i % 2 ? "#FAFBFC" : "white" }}>
+              <td style={{ ...cell, textAlign: "left", fontWeight: s.bps === sofrCut ? 700 : 400 }}>−{s.bps}bp</td>
+              <td style={{ ...cell, color: C.red }}>−${s.assetHit.toFixed(0)}M</td>
+              <td style={{ ...cell, color: C.green }}>+${s.liabSave.toFixed(0)}M</td>
+              <td style={{ ...cell, color: C.red }}>−${Math.abs(s.netImpact).toFixed(0)}M</td>
+              <td style={cell}>${s.niiQ.toFixed(3)}</td>
+              <td style={{ ...cell, fontWeight: 700, color: s.coverage >= 110 ? C.green : s.coverage >= 100 ? C.amber : C.red }}>{s.coverage.toFixed(0)}%</td>
+              <td style={cell}>{s.pnav.toFixed(1)}%</td>
+              <td style={cell}>${s.impliedPrice.toFixed(2)}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+
+      {/* ═══ The Punchline ═══ */}
+      <div style={{ padding: 14, background: C.frost, borderLeft: `3px solid ${C.navy}`, fontFamily: mono, fontSize: 10, color: C.navy, lineHeight: 1.8 }}>
+        <strong>Why NAV stays flat but P/NAV compresses:</strong><br/><br/>
+        NAV reflects the <em>fair value</em> of assets minus liabilities. For floating rate portfolios, fair value doesn't change meaningfully when rates move — a loan at SOFR + 575bp is worth roughly par whether SOFR is 5% or 3%, because the spread compensates for credit risk, not rate risk.<br/><br/>
+        But the <em>income</em> that loan generates drops from 10.75% to 8.75%. The equity holder's share of that income decline is amplified by leverage: GBDC earns on ${(totalAssets/1000).toFixed(1)}B of assets but only has ${(equity/1000).toFixed(1)}B of equity. A 100bp rate decline reduces asset income by ~${sensitivities.find(s=>s.bps===100).assetHit.toFixed(0)}M but only saves ~${sensitivities.find(s=>s.bps===100).liabSave.toFixed(0)}M on liabilities, leaving a ~${Math.abs(sensitivities.find(s=>s.bps===100).netImpact).toFixed(0)}M annual NII hit — or ~${Math.abs(sensitivities.find(s=>s.bps===100).netPS).toFixed(2)}/share.<br/><br/>
+        The market capitalizes this lower income stream at roughly the same yield, which means a lower price against the same NAV. That's the P/NAV compression — it's an <em>income</em> story, not an <em>asset quality</em> story.
+      </div>
+
+      <div style={{ fontFamily: mono, fontSize: 8, color: C.muted, marginTop: 12 }}>
+        Illustrative using GBDC capital structure. Actual sensitivity depends on rate floors, hedge positions, and reinvestment timing.
+        P/NAV model: GBDC-specific regression P/NAV = 98.8 + 1.156 × NII Δ from Peak (%), R² = 99.7%.
+      </div>
+    </div>
+  );
+}
+
+
 // ── Data Export Module ──
 function DataExportMod() {
   const all = Object.values(BDC);
@@ -4778,7 +5012,7 @@ function BDCFramework() {
   const [tab, setTab] = useState("capstructure");
   const p = BDC[bdc];
 
-  const isMeta = view === "methodology" || view === "compare" || view === "backtest" || view === "market" || view === "exec" || view === "marketlive" || view === "dataexport" || view === "returngrid" || view === "gbdcmodel" || view === "pnavmodel";
+  const isMeta = view === "methodology" || view === "compare" || view === "backtest" || view === "market" || view === "exec" || view === "marketlive" || view === "dataexport" || view === "returngrid" || view === "gbdcmodel" || view === "niisens" || view === "pnavmodel";
   const activeBDC = isMeta ? null : view;
   const activeP = activeBDC ? BDC[activeBDC] : p;
 
@@ -4798,6 +5032,7 @@ function BDCFramework() {
     { id: "marketlive", label: "Market Live", color: "#2E86AB" },
     { id: "compare", label: "Comparison", color: C.navy },
     ...Object.values(BDC).map(b => ({ id: b.ticker, label: b.ticker, sub: b.name, color: b.color })),
+    { id: "niisens", label: "Rate Sensitivity", color: "#B45309" },
     { id: "returngrid", label: "Return Grid", color: "#4A5568" },
     { id: "gbdcmodel", label: "GBDC Model", color: "#0891B2" },
     { id: "pnavmodel", label: "P/NAV Model", color: "#6B21A8" },
@@ -4812,6 +5047,7 @@ function BDCFramework() {
     market: { title: "Market Overview", sub: `${Object.keys(BDC).join(" | ")} | 12-Month Performance` },
     marketlive: { title: "Market Live", sub: `${Object.keys(BDC).join(" | ")} | Real-Time Pricing from Yahoo Finance` },
     compare: { title: "BDC Head-to-Head Comparison", sub: `${Object.keys(BDC).join(" vs ")} | As of March 11, 2026` },
+    niisens: { title: "Why Declining Rates Compress P/NAV", sub: "NII Sensitivity — How SOFR Cuts Flow Through the BDC Capital Structure" },
     returngrid: { title: "Return Sensitivity Grid", sub: "Discount-to-NAV Accretion and Dividend Yield Analysis | All Names" },
     pnavmodel: { title: "P/NAV Regression Model", sub: "Fixed-Effects Panel Model | P/NAV ~ 2Y Rate + NII/sh + FV/Cost + Debt/NAV | R² = 77.2% | N = 7,591" },
     gbdcmodel: { title: "GBDC — Investment Model", sub: "NII-Driven Valuation | P/NAV = 98.8 + 1.16 × NII Δ from Peak | R² = 99.7%" },
@@ -4824,7 +5060,7 @@ function BDCFramework() {
       {/* Top-Level Nav */}
       <div style={{ display: "flex", gap: 8, marginBottom: 14, flexWrap: "wrap" }}>
         {topNav.map(n => (
-          <button key={n.id} onClick={() => { setView(n.id); if (!["methodology","compare","backtest","market","marketlive","exec","dataexport","returngrid","gbdcmodel","pnavmodel"].includes(n.id)) { setBdc(n.id); setTab("capstructure"); } }}
+          <button key={n.id} onClick={() => { setView(n.id); if (!["methodology","compare","backtest","market","marketlive","exec","dataexport","returngrid","gbdcmodel","pnavmodel","niisens"].includes(n.id)) { setBdc(n.id); setTab("capstructure"); } }}
             style={{
               padding: "10px 20px", border: `2px solid ${n.color}`, cursor: "pointer",
               fontFamily: mono, fontSize: 13, fontWeight: 700, letterSpacing: "0.06em",
@@ -4871,6 +5107,7 @@ function BDCFramework() {
         {view === "market" && <MarketMod />}
         {view === "marketlive" && <MarketLiveMod />}
         {view === "compare" && <CompMod />}
+        {view === "niisens" && <NIISensitivityMod />}
         {view === "returngrid" && <ReturnGridMod />}
         {view === "gbdcmodel" && <GBDCModelMod />}
         {view === "pnavmodel" && <PNavModelMod />}
