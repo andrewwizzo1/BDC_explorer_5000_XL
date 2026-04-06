@@ -1,27 +1,31 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>BDC Equity Investment Framework</title>
-<script src="https://cdn.jsdelivr.net/npm/react@18.2.0/umd/react.production.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/react-dom@18.2.0/umd/react-dom.production.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/prop-types@15.8.1/prop-types.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/recharts@2.5.0/umd/Recharts.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@babel/standalone@7.24.7/babel.min.js"></script>
-<style>
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-  #root { min-height: 100vh; }
-  .loading { display: flex; align-items: center; justify-content: center; height: 100vh; font-family: "SF Mono", "Fira Code", monospace; color: #0C2340; font-size: 14px; }
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BDC Investment Framework</title>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'IBM Plex Sans', sans-serif; background: #F4F6F9; }
+    button { transition: all 0.15s ease; }
+    button:hover { opacity: 0.85; }
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #F1F5F9; }
+    ::-webkit-scrollbar-thumb { background: #94A3B8; border-radius: 3px; }
+    sup { font-size: 0.65em; }
+  </style>
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/recharts@2.12.7/umd/Recharts.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 </head>
 <body>
-<div id="root"><div class="loading">Loading BDC Framework...</div></div>
-<script>window.onerror=function(m,u,l){document.getElementById('root').innerHTML='<div style="padding:40px;font-family:monospace;color:#8B0000"><h2>Error</h2><p>'+m+'</p><p>Line: '+l+'</p></div>'};</script>
-<script type="text/babel" data-type="module">
-const { useState, useEffect, useMemo } = React;
-const { ResponsiveContainer, ComposedChart, LineChart, BarChart, AreaChart, ScatterChart, Scatter, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Line, Bar, Area, ReferenceLine, Cell } = Recharts;
+  <div id="root"></div>
+  <script type="text/babel" data-type="module">
+    const { useState, useMemo } = React;
+    const { BarChart, Bar, LineChart, Line, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ComposedChart, ReferenceLine, Cell, ScatterChart, Scatter, ZAxis } = Recharts;
+
 
 // ════════════════════════════════════════════════════════════════
 // COLOR PALETTE & CONSTANTS
@@ -1663,7 +1667,6 @@ function CapMod({ p }) {
 
 const TABS = [
   { id: "capstructure", label: "Capital Structure" },
-  { id: "implied", label: "Implied Marks" },
   { id: "cohort", label: "Mark Cohorts" },
   { id: "na", label: "Non-Accrual & PIK" },
   { id: "sector", label: "Sector & Concentration" },
@@ -3788,154 +3791,162 @@ function GBDCModelMod() {
 }
 
 
-// ── P/NAV Regression Model ──
+
+// ════════════════════════════════════════════════════════════════
+// P/NAV REGRESSION MODEL
+// Daily panel | N=7,591 | R²=77.2% | 6 names | Q2'21–March 2026
+// P/NAV ~ 2Y Treasury + NII/sh + FV/Cost + Debt/NAV + Name FE
+// ════════════════════════════════════════════════════════════════
 
 const NAVY = "#0C2340", SLATE = "#1E3A5F", GOLD = "#D4A843";
 const RED = "#DC2626", GREEN = "#059669", TEAL = "#0891B2", PURPLE = "#7C3AED";
 const TC = { ARCC: NAVY, BXSL: GREEN, GBDC: TEAL, OBDC: "#2563EB", TCPC: RED, TSLX: PURPLE };
 const TICKERS = ["ARCC","BXSL","GBDC","OBDC","TCPC","TSLX"];
+const NAMES = { ARCC:"Ares Capital", BXSL:"Blackstone Secured", GBDC:"Golub Capital", OBDC:"Blue Owl Capital", TCPC:"BlackRock TCP", TSLX:"Sixth Street" };
 
-// Model: P/NAV = const + b_2y*2Y + b_nii*NII/sh + b_fvc*FV/Cost + b_dna*Debt/NAV + FE
 const COEFF = {"const": 1.022755, "tsy_2y": -2.801803, "nii_ps": 0.475923, "fv_cost": 0.133305, "debt_nav": -0.227494, "BXSL": -0.139304, "GBDC": -0.006948, "OBDC": -0.060219, "TCPC": -0.030757, "TSLX": 0.16127};
 const TSTAT = {"const": 18.8, "tsy_2y": -33.3, "nii_ps": 36.0, "fv_cost": 2.6, "debt_nav": -30.8, "BXSL": -27.5, "GBDC": -2.0, "OBDC": -19.1, "TCPC": -7.9, "TSLX": 57.9};
 const MODEL_R2 = 0.7717;
 const MODEL_N = 7591;
 
-// Latest quarterly fundamentals per name
-const LATEST = {"ARCC": {"nii_ps": 0.516957, "fv_cost": 1.008034, "debt_nav": 1.091842, "nav_ps": 19.94, "price": 17.96, "pnav": 0.900702, "tsy_2y": 0.0388}, "BXSL": {"nii_ps": 0.820321, "fv_cost": 0.987443, "debt_nav": 1.226059, "nav_ps": 26.92, "price": 23.76, "pnav": 0.882615, "tsy_2y": 0.0388}, "GBDC": {"nii_ps": 0.363453, "fv_cost": 0.998325, "debt_nav": 1.253666, "nav_ps": 14.84, "price": 12.35, "pnav": 0.83221, "tsy_2y": 0.0388}, "OBDC": {"nii_ps": 0.376215, "fv_cost": 1.003235, "debt_nav": 1.288112, "nav_ps": 14.81, "price": 11.15, "pnav": 0.75287, "tsy_2y": 0.0388}, "TCPC": {"nii_ps": 0.260014, "fv_cost": 0.913743, "debt_nav": 1.758515, "nav_ps": 7.07, "price": 3.51, "pnav": 0.496464, "tsy_2y": 0.0388}, "TSLX": {"nii_ps": 0.534394, "fv_cost": 1.007232, "debt_nav": 1.140922, "nav_ps": 16.98, "price": 17.75, "pnav": 1.045347, "tsy_2y": 0.0388}};
+const LATEST = {"ARCC": {"nii_ps": 0.516957, "fv_cost": 1.008034, "debt_nav": 1.091842, "nav_ps": 19.94, "price": 17.96, "pnav": 0.900702, "tsy_2y": 0.0388, "div_q": 0.48, "div_ann": 1.92}, "BXSL": {"nii_ps": 0.820321, "fv_cost": 0.987443, "debt_nav": 1.226059, "nav_ps": 26.92, "price": 23.76, "pnav": 0.882615, "tsy_2y": 0.0388, "div_q": 0.77, "div_ann": 3.08}, "GBDC": {"nii_ps": 0.363453, "fv_cost": 0.998325, "debt_nav": 1.253666, "nav_ps": 14.84, "price": 12.35, "pnav": 0.83221, "tsy_2y": 0.0388, "div_q": 0.39, "div_ann": 1.56}, "OBDC": {"nii_ps": 0.376215, "fv_cost": 1.003235, "debt_nav": 1.288112, "nav_ps": 14.81, "price": 11.15, "pnav": 0.75287, "tsy_2y": 0.0388, "div_q": 0.37, "div_ann": 1.48}, "TCPC": {"nii_ps": 0.260014, "fv_cost": 0.913743, "debt_nav": 1.758515, "nav_ps": 7.07, "price": 3.51, "pnav": 0.496464, "tsy_2y": 0.0388, "div_q": 0.25, "div_ann": 1.0}, "TSLX": {"nii_ps": 0.534394, "fv_cost": 1.007232, "debt_nav": 1.140922, "nav_ps": 16.98, "price": 17.75, "pnav": 1.045347, "tsy_2y": 0.0388, "div_q": 0.51, "div_ann": 2.04}};
 
-// Monthly time series (P/NAV actual, fitted, residual, 2Y rate)
 const TS = [
+{d:"2021-03-31",t:"ARCC",pnav:1.0722,fitted:1.0504,resid:0.0218,r2y:0.0016},
+{d:"2021-03-31",t:"GBDC",pnav:0.9838,fitted:1.0465,resid:-0.0627,r2y:0.0016},
+{d:"2021-03-31",t:"OBDC",pnav:0.9291,fitted:1.0083,resid:-0.0791,r2y:0.0016},
+{d:"2021-03-31",t:"TCPC",pnav:1.0199,fitted:1.0236,resid:-0.0037,r2y:0.0016},
+{d:"2021-03-31",t:"TSLX",pnav:1.2769,fitted:1.3164,resid:-0.0395,r2y:0.0016},
 {d:"2021-04-30",t:"ARCC",pnav:1.1032,fitted:1.0504,resid:0.0527,r2y:0.0016},
 {d:"2021-04-30",t:"GBDC",pnav:1.0538,fitted:1.0465,resid:0.0073,r2y:0.0016},
 {d:"2021-04-30",t:"OBDC",pnav:0.9750,fitted:1.0083,resid:-0.0332,r2y:0.0016},
 {d:"2021-04-30",t:"TCPC",pnav:1.0782,fitted:1.0236,resid:0.0546,r2y:0.0016},
 {d:"2021-04-30",t:"TSLX",pnav:1.3528,fitted:1.3164,resid:0.0364,r2y:0.0016},
-{d:"2021-05-28",t:"ARCC",pnav:1.1158,fitted:1.0510,resid:0.0648,r2y:0.0014},
-{d:"2021-05-28",t:"GBDC",pnav:1.0646,fitted:1.0471,resid:0.0175,r2y:0.0014},
-{d:"2021-05-28",t:"OBDC",pnav:0.9717,fitted:1.0088,resid:-0.0372,r2y:0.0014},
-{d:"2021-05-28",t:"TCPC",pnav:1.0944,fitted:1.0241,resid:0.0703,r2y:0.0014},
-{d:"2021-05-28",t:"TSLX",pnav:1.3552,fitted:1.3170,resid:0.0382,r2y:0.0014},
-{d:"2021-06-25",t:"ARCC",pnav:1.1203,fitted:1.0470,resid:0.0733,r2y:0.0028},
-{d:"2021-06-25",t:"GBDC",pnav:1.0498,fitted:1.0431,resid:0.0067,r2y:0.0028},
-{d:"2021-06-25",t:"OBDC",pnav:0.9912,fitted:1.0049,resid:-0.0137,r2y:0.0028},
-{d:"2021-06-25",t:"TCPC",pnav:1.0170,fitted:1.0202,resid:-0.0032,r2y:0.0028},
-{d:"2021-06-25",t:"TSLX",pnav:1.3364,fitted:1.3130,resid:0.0233,r2y:0.0028},
+{d:"2021-05-31",t:"ARCC",pnav:1.1158,fitted:1.0510,resid:0.0648,r2y:0.0014},
+{d:"2021-05-31",t:"GBDC",pnav:1.0646,fitted:1.0471,resid:0.0175,r2y:0.0014},
+{d:"2021-05-31",t:"OBDC",pnav:0.9717,fitted:1.0088,resid:-0.0372,r2y:0.0014},
+{d:"2021-05-31",t:"TCPC",pnav:1.0944,fitted:1.0241,resid:0.0703,r2y:0.0014},
+{d:"2021-05-31",t:"TSLX",pnav:1.3552,fitted:1.3170,resid:0.0382,r2y:0.0014},
+{d:"2021-06-30",t:"ARCC",pnav:1.0787,fitted:1.1057,resid:-0.0269,r2y:0.0025},
+{d:"2021-06-30",t:"GBDC",pnav:1.0239,fitted:1.0760,resid:-0.0521,r2y:0.0025},
+{d:"2021-06-30",t:"OBDC",pnav:0.9577,fitted:1.0181,resid:-0.0604,r2y:0.0025},
+{d:"2021-06-30",t:"TCPC",pnav:0.9726,fitted:0.9928,resid:-0.0202,r2y:0.0025},
+{d:"2021-06-30",t:"TSLX",pnav:1.3169,fitted:1.2952,resid:0.0218,r2y:0.0025},
 {d:"2021-07-30",t:"ARCC",pnav:1.0997,fitted:1.1074,resid:-0.0077,r2y:0.0019},
 {d:"2021-07-30",t:"GBDC",pnav:1.0478,fitted:1.0777,resid:-0.0299,r2y:0.0019},
 {d:"2021-07-30",t:"OBDC",pnav:0.9658,fitted:1.0198,resid:-0.0540,r2y:0.0019},
 {d:"2021-07-30",t:"TCPC",pnav:1.0042,fitted:0.9944,resid:0.0098,r2y:0.0019},
 {d:"2021-07-30",t:"TSLX",pnav:1.3822,fitted:1.2968,resid:0.0854,r2y:0.0019},
-{d:"2021-08-27",t:"ARCC",pnav:1.1079,fitted:1.1065,resid:0.0014,r2y:0.0022},
-{d:"2021-08-27",t:"GBDC",pnav:1.0505,fitted:1.0769,resid:-0.0264,r2y:0.0022},
-{d:"2021-08-27",t:"OBDC",pnav:0.9886,fitted:1.0189,resid:-0.0303,r2y:0.0022},
-{d:"2021-08-27",t:"TCPC",pnav:1.0127,fitted:0.9936,resid:0.0191,r2y:0.0022},
-{d:"2021-08-27",t:"TSLX",pnav:1.3780,fitted:1.2960,resid:0.0821,r2y:0.0022},
-{d:"2021-09-24",t:"ARCC",pnav:1.1063,fitted:1.1046,resid:0.0017,r2y:0.0029},
-{d:"2021-09-24",t:"GBDC",pnav:1.0339,fitted:1.0749,resid:-0.0411,r2y:0.0029},
-{d:"2021-09-24",t:"OBDC",pnav:0.9678,fitted:1.0169,resid:-0.0492,r2y:0.0029},
-{d:"2021-09-24",t:"TCPC",pnav:0.9571,fitted:0.9916,resid:-0.0346,r2y:0.0029},
-{d:"2021-09-24",t:"TSLX",pnav:1.3181,fitted:1.2940,resid:0.0241,r2y:0.0029},
+{d:"2021-08-31",t:"ARCC",pnav:1.0958,fitted:1.1071,resid:-0.0113,r2y:0.0020},
+{d:"2021-08-31",t:"GBDC",pnav:1.0432,fitted:1.0774,resid:-0.0343,r2y:0.0020},
+{d:"2021-08-31",t:"OBDC",pnav:0.9799,fitted:1.0195,resid:-0.0396,r2y:0.0020},
+{d:"2021-08-31",t:"TCPC",pnav:1.0056,fitted:0.9942,resid:0.0115,r2y:0.0020},
+{d:"2021-08-31",t:"TSLX",pnav:1.3531,fitted:1.2966,resid:0.0566,r2y:0.0020},
+{d:"2021-09-30",t:"ARCC",pnav:1.0977,fitted:1.0890,resid:0.0087,r2y:0.0028},
+{d:"2021-09-30",t:"GBDC",pnav:1.0408,fitted:1.0852,resid:-0.0444,r2y:0.0028},
+{d:"2021-09-30",t:"OBDC",pnav:0.9445,fitted:0.9996,resid:-0.0551,r2y:0.0028},
+{d:"2021-09-30",t:"TCPC",pnav:0.9631,fitted:0.9944,resid:-0.0313,r2y:0.0028},
+{d:"2021-09-30",t:"TSLX",pnav:1.2928,fitted:1.3169,resid:-0.0241,r2y:0.0028},
 {d:"2021-10-29",t:"ARCC",pnav:1.1577,fitted:1.0834,resid:0.0743,r2y:0.0048},
 {d:"2021-10-29",t:"GBDC",pnav:1.0454,fitted:1.0796,resid:-0.0342,r2y:0.0048},
 {d:"2021-10-29",t:"OBDC",pnav:0.9619,fitted:0.9940,resid:-0.0321,r2y:0.0048},
 {d:"2021-10-29",t:"TCPC",pnav:1.0192,fitted:0.9888,resid:0.0304,r2y:0.0048},
 {d:"2021-10-29",t:"TSLX",pnav:1.3877,fitted:1.3113,resid:0.0763,r2y:0.0048},
-{d:"2021-11-26",t:"ARCC",pnav:1.0988,fitted:1.0829,resid:0.0160,r2y:0.0050},
-{d:"2021-11-26",t:"GBDC",pnav:0.9882,fitted:1.0790,resid:-0.0909,r2y:0.0050},
-{d:"2021-11-26",t:"OBDC",pnav:0.9405,fitted:0.9935,resid:-0.0530,r2y:0.0050},
-{d:"2021-11-26",t:"TCPC",pnav:0.9574,fitted:0.9882,resid:-0.0308,r2y:0.0050},
-{d:"2021-11-26",t:"TSLX",pnav:1.4005,fitted:1.3108,resid:0.0897,r2y:0.0050},
+{d:"2021-11-30",t:"ARCC",pnav:1.0940,fitted:1.0823,resid:0.0117,r2y:0.0052},
+{d:"2021-11-30",t:"GBDC",pnav:0.9987,fitted:1.0785,resid:-0.0798,r2y:0.0052},
+{d:"2021-11-30",t:"OBDC",pnav:0.9324,fitted:0.9929,resid:-0.0605,r2y:0.0052},
+{d:"2021-11-30",t:"TCPC",pnav:0.9475,fitted:0.9877,resid:-0.0402,r2y:0.0052},
+{d:"2021-11-30",t:"TSLX",pnav:1.3882,fitted:1.3102,resid:0.0780,r2y:0.0052},
 {d:"2021-12-31",t:"ARCC",pnav:1.1176,fitted:1.1288,resid:-0.0112,r2y:0.0073},
 {d:"2021-12-31",t:"BXSL",pnav:1.2943,fitted:1.0826,resid:0.2117,r2y:0.0073},
 {d:"2021-12-31",t:"GBDC",pnav:1.0118,fitted:1.0315,resid:-0.0197,r2y:0.0073},
 {d:"2021-12-31",t:"OBDC",pnav:0.9390,fitted:0.9776,resid:-0.0386,r2y:0.0073},
 {d:"2021-12-31",t:"TCPC",pnav:0.9408,fitted:0.9834,resid:-0.0426,r2y:0.0073},
 {d:"2021-12-31",t:"TSLX",pnav:1.3890,fitted:1.4057,resid:-0.0167,r2y:0.0073},
-{d:"2022-01-28",t:"ARCC",pnav:1.1403,fitted:1.1170,resid:0.0232,r2y:0.0115},
-{d:"2022-01-28",t:"BXSL",pnav:1.1211,fitted:1.0708,resid:0.0502,r2y:0.0115},
-{d:"2022-01-28",t:"GBDC",pnav:1.0190,fitted:1.0197,resid:-0.0007,r2y:0.0115},
-{d:"2022-01-28",t:"OBDC",pnav:0.9622,fitted:0.9658,resid:-0.0036,r2y:0.0115},
-{d:"2022-01-28",t:"TCPC",pnav:0.9331,fitted:0.9717,resid:-0.0385,r2y:0.0115},
-{d:"2022-01-28",t:"TSLX",pnav:1.3943,fitted:1.3939,resid:0.0004,r2y:0.0115},
-{d:"2022-02-25",t:"ARCC",pnav:1.1482,fitted:1.1058,resid:0.0424,r2y:0.0155},
-{d:"2022-02-25",t:"BXSL",pnav:1.1039,fitted:1.0596,resid:0.0443,r2y:0.0155},
-{d:"2022-02-25",t:"GBDC",pnav:1.0328,fitted:1.0085,resid:0.0242,r2y:0.0155},
-{d:"2022-02-25",t:"OBDC",pnav:0.9993,fitted:0.9546,resid:0.0448,r2y:0.0155},
-{d:"2022-02-25",t:"TCPC",pnav:0.9547,fitted:0.9605,resid:-0.0057,r2y:0.0155},
-{d:"2022-02-25",t:"TSLX",pnav:1.3895,fitted:1.3827,resid:0.0068,r2y:0.0155},
-{d:"2022-03-25",t:"ARCC",pnav:1.0986,fitted:1.0848,resid:0.0138,r2y:0.0230},
-{d:"2022-03-25",t:"BXSL",pnav:1.0887,fitted:1.0386,resid:0.0501,r2y:0.0230},
-{d:"2022-03-25",t:"GBDC",pnav:0.9895,fitted:0.9875,resid:0.0020,r2y:0.0230},
-{d:"2022-03-25",t:"OBDC",pnav:0.9947,fitted:0.9336,resid:0.0611,r2y:0.0230},
-{d:"2022-03-25",t:"TCPC",pnav:0.9812,fitted:0.9395,resid:0.0417,r2y:0.0230},
-{d:"2022-03-25",t:"TSLX",pnav:1.3759,fitted:1.3617,resid:0.0142,r2y:0.0230},
+{d:"2022-01-31",t:"ARCC",pnav:1.1656,fitted:1.1162,resid:0.0494,r2y:0.0118},
+{d:"2022-01-31",t:"BXSL",pnav:1.1013,fitted:1.0700,resid:0.0313,r2y:0.0118},
+{d:"2022-01-31",t:"GBDC",pnav:1.0275,fitted:1.0189,resid:0.0086,r2y:0.0118},
+{d:"2022-01-31",t:"OBDC",pnav:0.9735,fitted:0.9649,resid:0.0085,r2y:0.0118},
+{d:"2022-01-31",t:"TCPC",pnav:0.9429,fitted:0.9708,resid:-0.0279,r2y:0.0118},
+{d:"2022-01-31",t:"TSLX",pnav:1.4169,fitted:1.3931,resid:0.0238,r2y:0.0118},
+{d:"2022-02-28",t:"ARCC",pnav:1.1519,fitted:1.1089,resid:0.0430,r2y:0.0144},
+{d:"2022-02-28",t:"BXSL",pnav:1.0997,fitted:1.0627,resid:0.0370,r2y:0.0144},
+{d:"2022-02-28",t:"GBDC",pnav:1.0328,fitted:1.0116,resid:0.0211,r2y:0.0144},
+{d:"2022-02-28",t:"OBDC",pnav:0.9980,fitted:0.9577,resid:0.0404,r2y:0.0144},
+{d:"2022-02-28",t:"TCPC",pnav:0.9568,fitted:0.9635,resid:-0.0067,r2y:0.0144},
+{d:"2022-02-28",t:"TSLX",pnav:1.3919,fitted:1.3858,resid:0.0061,r2y:0.0144},
+{d:"2022-03-31",t:"ARCC",pnav:1.1009,fitted:1.0156,resid:0.0853,r2y:0.0228},
+{d:"2022-03-31",t:"BXSL",pnav:1.0670,fitted:0.9641,resid:0.1028,r2y:0.0228},
+{d:"2022-03-31",t:"GBDC",pnav:0.9909,fitted:0.9613,resid:0.0296,r2y:0.0228},
+{d:"2022-03-31",t:"OBDC",pnav:0.9933,fitted:0.9053,resid:0.0880,r2y:0.0228},
+{d:"2022-03-31",t:"TCPC",pnav:1.0021,fitted:0.9457,resid:0.0564,r2y:0.0228},
+{d:"2022-03-31",t:"TSLX",pnav:1.3797,fitted:1.2718,resid:0.1080,r2y:0.0228},
 {d:"2022-04-29",t:"ARCC",pnav:1.0652,fitted:1.0038,resid:0.0614,r2y:0.0270},
 {d:"2022-04-29",t:"BXSL",pnav:1.0551,fitted:0.9524,resid:0.1027,r2y:0.0270},
 {d:"2022-04-29",t:"GBDC",pnav:0.9720,fitted:0.9495,resid:0.0224,r2y:0.0270},
 {d:"2022-04-29",t:"OBDC",pnav:0.9617,fitted:0.8935,resid:0.0682,r2y:0.0270},
 {d:"2022-04-29",t:"TCPC",pnav:0.9601,fitted:0.9339,resid:0.0261,r2y:0.0270},
 {d:"2022-04-29",t:"TSLX",pnav:1.3235,fitted:1.2600,resid:0.0635,r2y:0.0270},
-{d:"2022-05-27",t:"ARCC",pnav:1.0441,fitted:1.0102,resid:0.0339,r2y:0.0247},
-{d:"2022-05-27",t:"BXSL",pnav:0.9591,fitted:0.9588,resid:0.0002,r2y:0.0247},
-{d:"2022-05-27",t:"GBDC",pnav:0.9303,fitted:0.9560,resid:-0.0257,r2y:0.0247},
-{d:"2022-05-27",t:"OBDC",pnav:0.9173,fitted:0.8999,resid:0.0174,r2y:0.0247},
-{d:"2022-05-27",t:"TCPC",pnav:0.9587,fitted:0.9404,resid:0.0183,r2y:0.0247},
-{d:"2022-05-27",t:"TSLX",pnav:1.2476,fitted:1.2665,resid:-0.0188,r2y:0.0247},
-{d:"2022-06-24",t:"ARCC",pnav:0.9496,fitted:0.9943,resid:-0.0447,r2y:0.0304},
-{d:"2022-06-24",t:"BXSL",pnav:0.9189,fitted:0.9428,resid:-0.0240,r2y:0.0304},
-{d:"2022-06-24",t:"GBDC",pnav:0.8378,fitted:0.9400,resid:-0.1022,r2y:0.0304},
-{d:"2022-06-24",t:"OBDC",pnav:0.8535,fitted:0.8840,resid:-0.0305,r2y:0.0304},
-{d:"2022-06-24",t:"TCPC",pnav:0.8725,fitted:0.9244,resid:-0.0520,r2y:0.0304},
-{d:"2022-06-24",t:"TSLX",pnav:1.1072,fitted:1.2505,resid:-0.1433,r2y:0.0304},
+{d:"2022-05-31",t:"ARCC",pnav:1.0184,fitted:1.0086,resid:0.0098,r2y:0.0253},
+{d:"2022-05-31",t:"BXSL",pnav:0.9495,fitted:0.9571,resid:-0.0076,r2y:0.0253},
+{d:"2022-05-31",t:"GBDC",pnav:0.9212,fitted:0.9543,resid:-0.0331,r2y:0.0253},
+{d:"2022-05-31",t:"OBDC",pnav:0.9113,fitted:0.8983,resid:0.0130,r2y:0.0253},
+{d:"2022-05-31",t:"TCPC",pnav:0.9411,fitted:0.9387,resid:0.0024,r2y:0.0253},
+{d:"2022-05-31",t:"TSLX",pnav:1.2257,fitted:1.2648,resid:-0.0391,r2y:0.0253},
+{d:"2022-06-30",t:"ARCC",pnav:0.9532,fitted:1.0622,resid:-0.1090,r2y:0.0292},
+{d:"2022-06-30",t:"BXSL",pnav:0.9131,fitted:0.9369,resid:-0.0238,r2y:0.0292},
+{d:"2022-06-30",t:"GBDC",pnav:0.8560,fitted:0.9562,resid:-0.1002,r2y:0.0292},
+{d:"2022-06-30",t:"OBDC",pnav:0.8515,fitted:0.8822,resid:-0.0306,r2y:0.0292},
+{d:"2022-06-30",t:"TCPC",pnav:0.8969,fitted:0.9296,resid:-0.0327,r2y:0.0292},
+{d:"2022-06-30",t:"TSLX",pnav:1.1371,fitted:1.2861,resid:-0.1490,r2y:0.0292},
 {d:"2022-07-29",t:"ARCC",pnav:1.0308,fitted:1.0631,resid:-0.0322,r2y:0.0289},
 {d:"2022-07-29",t:"BXSL",pnav:0.9069,fitted:0.9378,resid:-0.0308,r2y:0.0289},
 {d:"2022-07-29",t:"GBDC",pnav:0.9273,fitted:0.9571,resid:-0.0297,r2y:0.0289},
 {d:"2022-07-29",t:"OBDC",pnav:0.8902,fitted:0.8830,resid:0.0072,r2y:0.0289},
 {d:"2022-07-29",t:"TCPC",pnav:0.9263,fitted:0.9305,resid:-0.0042,r2y:0.0289},
 {d:"2022-07-29",t:"TSLX",pnav:1.1825,fitted:1.2869,resid:-0.1044,r2y:0.0289},
-{d:"2022-08-26",t:"ARCC",pnav:1.0739,fitted:1.0496,resid:0.0243,r2y:0.0337},
-{d:"2022-08-26",t:"BXSL",pnav:0.9212,fitted:0.9243,resid:-0.0031,r2y:0.0337},
-{d:"2022-08-26",t:"GBDC",pnav:0.9194,fitted:0.9436,resid:-0.0242,r2y:0.0337},
-{d:"2022-08-26",t:"OBDC",pnav:0.9206,fitted:0.8695,resid:0.0510,r2y:0.0337},
-{d:"2022-08-26",t:"TCPC",pnav:0.9885,fitted:0.9170,resid:0.0715,r2y:0.0337},
-{d:"2022-08-26",t:"TSLX",pnav:1.1819,fitted:1.2735,resid:-0.0915,r2y:0.0337},
+{d:"2022-08-31",t:"ARCC",pnav:1.0441,fitted:1.0474,resid:-0.0032,r2y:0.0345},
+{d:"2022-08-31",t:"BXSL",pnav:0.9158,fitted:0.9221,resid:-0.0063,r2y:0.0345},
+{d:"2022-08-31",t:"GBDC",pnav:0.9188,fitted:0.9414,resid:-0.0226,r2y:0.0345},
+{d:"2022-08-31",t:"OBDC",pnav:0.9075,fitted:0.8673,resid:0.0402,r2y:0.0345},
+{d:"2022-08-31",t:"TCPC",pnav:0.9707,fitted:0.9148,resid:0.0559,r2y:0.0345},
+{d:"2022-08-31",t:"TSLX",pnav:1.1573,fitted:1.2712,resid:-0.1139,r2y:0.0345},
 {d:"2022-09-30",t:"ARCC",pnav:0.9095,fitted:1.0218,resid:-0.1123,r2y:0.0422},
 {d:"2022-09-30",t:"BXSL",pnav:0.8828,fitted:0.9533,resid:-0.0705,r2y:0.0422},
 {d:"2022-09-30",t:"GBDC",pnav:0.8321,fitted:0.8981,resid:-0.0659,r2y:0.0422},
 {d:"2022-09-30",t:"OBDC",pnav:0.6983,fitted:0.8796,resid:-0.1813,r2y:0.0422},
 {d:"2022-09-30",t:"TCPC",pnav:0.7741,fitted:0.9183,resid:-0.1442,r2y:0.0422},
 {d:"2022-09-30",t:"TSLX",pnav:0.9988,fitted:1.2032,resid:-0.2044,r2y:0.0422},
-{d:"2022-10-28",t:"ARCC",pnav:1.0560,fitted:1.0165,resid:0.0396,r2y:0.0441},
-{d:"2022-10-28",t:"BXSL",pnav:0.9270,fitted:0.9479,resid:-0.0209,r2y:0.0441},
-{d:"2022-10-28",t:"GBDC",pnav:0.8791,fitted:0.8927,resid:-0.0136,r2y:0.0441},
-{d:"2022-10-28",t:"OBDC",pnav:0.7879,fitted:0.8743,resid:-0.0864,r2y:0.0441},
-{d:"2022-10-28",t:"TCPC",pnav:0.8463,fitted:0.9130,resid:-0.0667,r2y:0.0441},
-{d:"2022-10-28",t:"TSLX",pnav:1.1112,fitted:1.1979,resid:-0.0867,r2y:0.0441},
-{d:"2022-11-25",t:"ARCC",pnav:1.0647,fitted:1.0162,resid:0.0485,r2y:0.0442},
-{d:"2022-11-25",t:"BXSL",pnav:0.9262,fitted:0.9477,resid:-0.0214,r2y:0.0442},
-{d:"2022-11-25",t:"GBDC",pnav:0.9570,fitted:0.8924,resid:0.0646,r2y:0.0442},
-{d:"2022-11-25",t:"OBDC",pnav:0.8882,fitted:0.8740,resid:0.0142,r2y:0.0442},
-{d:"2022-11-25",t:"TCPC",pnav:0.9589,fitted:0.9127,resid:0.0462,r2y:0.0442},
-{d:"2022-11-25",t:"TSLX",pnav:1.1699,fitted:1.1976,resid:-0.0277,r2y:0.0442},
+{d:"2022-10-31",t:"ARCC",pnav:1.0469,fitted:1.0137,resid:0.0332,r2y:0.0451},
+{d:"2022-10-31",t:"BXSL",pnav:0.9041,fitted:0.9451,resid:-0.0410,r2y:0.0451},
+{d:"2022-10-31",t:"GBDC",pnav:0.8711,fitted:0.8899,resid:-0.0189,r2y:0.0451},
+{d:"2022-10-31",t:"OBDC",pnav:0.7993,fitted:0.8715,resid:-0.0721,r2y:0.0451},
+{d:"2022-10-31",t:"TCPC",pnav:0.8378,fitted:0.9102,resid:-0.0724,r2y:0.0451},
+{d:"2022-10-31",t:"TSLX",pnav:1.1100,fitted:1.1951,resid:-0.0851,r2y:0.0451},
+{d:"2022-11-30",t:"ARCC",pnav:1.0587,fitted:1.0173,resid:0.0414,r2y:0.0438},
+{d:"2022-11-30",t:"BXSL",pnav:0.9293,fitted:0.9488,resid:-0.0194,r2y:0.0438},
+{d:"2022-11-30",t:"GBDC",pnav:0.9402,fitted:0.8936,resid:0.0467,r2y:0.0438},
+{d:"2022-11-30",t:"OBDC",pnav:0.8694,fitted:0.8751,resid:-0.0057,r2y:0.0438},
+{d:"2022-11-30",t:"TCPC",pnav:0.9405,fitted:0.9138,resid:0.0267,r2y:0.0438},
+{d:"2022-11-30",t:"TSLX",pnav:1.1516,fitted:1.1987,resid:-0.0472,r2y:0.0438},
 {d:"2022-12-30",t:"ARCC",pnav:0.9952,fitted:1.0165,resid:-0.0213,r2y:0.0441},
 {d:"2022-12-30",t:"BXSL",pnav:0.8676,fitted:0.9479,resid:-0.0803,r2y:0.0441},
 {d:"2022-12-30",t:"GBDC",pnav:0.8838,fitted:0.8927,resid:-0.0089,r2y:0.0441},
 {d:"2022-12-30",t:"OBDC",pnav:0.7778,fitted:0.8743,resid:-0.0965,r2y:0.0441},
 {d:"2022-12-30",t:"TCPC",pnav:0.9164,fitted:0.9130,resid:0.0034,r2y:0.0441},
 {d:"2022-12-30",t:"TSLX",pnav:1.0880,fitted:1.1979,resid:-0.1099,r2y:0.0441},
-{d:"2023-01-27",t:"ARCC",pnav:1.0674,fitted:1.0728,resid:-0.0054,r2y:0.0419},
-{d:"2023-01-27",t:"BXSL",pnav:0.9186,fitted:1.0251,resid:-0.1064,r2y:0.0419},
-{d:"2023-01-27",t:"GBDC",pnav:0.9436,fitted:0.9280,resid:0.0156,r2y:0.0419},
-{d:"2023-01-27",t:"OBDC",pnav:0.8819,fitted:0.8961,resid:-0.0142,r2y:0.0419},
-{d:"2023-01-27",t:"TCPC",pnav:1.0286,fitted:0.8930,resid:0.1356,r2y:0.0419},
-{d:"2023-01-27",t:"TSLX",pnav:1.1820,fitted:1.2627,resid:-0.0806,r2y:0.0419},
-{d:"2023-02-24",t:"ARCC",pnav:1.0500,fitted:1.0563,resid:-0.0063,r2y:0.0478},
-{d:"2023-02-24",t:"BXSL",pnav:0.9753,fitted:1.0085,resid:-0.0332,r2y:0.0478},
-{d:"2023-02-24",t:"GBDC",pnav:0.9443,fitted:0.9115,resid:0.0328,r2y:0.0478},
-{d:"2023-02-24",t:"OBDC",pnav:0.9066,fitted:0.8796,resid:0.0270,r2y:0.0478},
-{d:"2023-02-24",t:"TCPC",pnav:0.9977,fitted:0.8765,resid:0.1212,r2y:0.0478},
-{d:"2023-02-24",t:"TSLX",pnav:1.1529,fitted:1.2462,resid:-0.0932,r2y:0.0478},
+{d:"2023-01-31",t:"ARCC",pnav:1.0527,fitted:1.0722,resid:-0.0195,r2y:0.0421},
+{d:"2023-01-31",t:"BXSL",pnav:0.9487,fitted:1.0245,resid:-0.0758,r2y:0.0421},
+{d:"2023-01-31",t:"GBDC",pnav:0.9313,fitted:0.9274,resid:0.0039,r2y:0.0421},
+{d:"2023-01-31",t:"OBDC",pnav:0.8719,fitted:0.8956,resid:-0.0236,r2y:0.0421},
+{d:"2023-01-31",t:"TCPC",pnav:1.0232,fitted:0.8925,resid:0.1307,r2y:0.0421},
+{d:"2023-01-31",t:"TSLX",pnav:1.1620,fitted:1.2621,resid:-0.1001,r2y:0.0421},
+{d:"2023-02-28",t:"ARCC",pnav:1.0522,fitted:1.0554,resid:-0.0032,r2y:0.0481},
+{d:"2023-02-28",t:"BXSL",pnav:0.9988,fitted:1.0077,resid:-0.0088,r2y:0.0481},
+{d:"2023-02-28",t:"GBDC",pnav:0.9579,fitted:0.9106,resid:0.0472,r2y:0.0481},
+{d:"2023-02-28",t:"OBDC",pnav:0.9139,fitted:0.8787,resid:0.0352,r2y:0.0481},
+{d:"2023-02-28",t:"TCPC",pnav:0.8940,fitted:0.8757,resid:0.0184,r2y:0.0481},
+{d:"2023-02-28",t:"TSLX",pnav:1.1529,fitted:1.2453,resid:-0.0924,r2y:0.0481},
 {d:"2023-03-31",t:"ARCC",pnav:0.9905,fitted:1.0383,resid:-0.0477,r2y:0.0406},
 {d:"2023-03-31",t:"BXSL",pnav:0.9552,fitted:1.0522,resid:-0.0971,r2y:0.0406},
 {d:"2023-03-31",t:"GBDC",pnav:0.9206,fitted:0.9484,resid:-0.0278,r2y:0.0406},
@@ -3948,78 +3959,78 @@ const TS = [
 {d:"2023-04-28",t:"OBDC",pnav:0.8568,fitted:0.9197,resid:-0.0630,r2y:0.0404},
 {d:"2023-04-28",t:"TCPC",pnav:0.7723,fitted:0.9330,resid:-0.1607,r2y:0.0404},
 {d:"2023-04-28",t:"TSLX",pnav:1.1019,fitted:1.2142,resid:-0.1123,r2y:0.0404},
-{d:"2023-05-26",t:"ARCC",pnav:1.0201,fitted:1.0248,resid:-0.0048,r2y:0.0454},
-{d:"2023-05-26",t:"BXSL",pnav:0.9828,fitted:1.0388,resid:-0.0560,r2y:0.0454},
-{d:"2023-05-26",t:"GBDC",pnav:0.8975,fitted:0.9349,resid:-0.0375,r2y:0.0454},
-{d:"2023-05-26",t:"OBDC",pnav:0.8799,fitted:0.9057,resid:-0.0259,r2y:0.0454},
-{d:"2023-05-26",t:"TCPC",pnav:0.8085,fitted:0.9190,resid:-0.1105,r2y:0.0454},
-{d:"2023-05-26",t:"TSLX",pnav:1.0976,fitted:1.2002,resid:-0.1025,r2y:0.0454},
+{d:"2023-05-31",t:"ARCC",pnav:1.0157,fitted:1.0287,resid:-0.0130,r2y:0.0440},
+{d:"2023-05-31",t:"BXSL",pnav:0.9820,fitted:1.0427,resid:-0.0607,r2y:0.0440},
+{d:"2023-05-31",t:"GBDC",pnav:0.9002,fitted:0.9389,resid:-0.0387,r2y:0.0440},
+{d:"2023-05-31",t:"OBDC",pnav:0.8865,fitted:0.9097,resid:-0.0232,r2y:0.0440},
+{d:"2023-05-31",t:"TCPC",pnav:0.7969,fitted:0.9229,resid:-0.1259,r2y:0.0440},
+{d:"2023-05-31",t:"TSLX",pnav:1.0970,fitted:1.2041,resid:-0.1071,r2y:0.0440},
 {d:"2023-06-30",t:"ARCC",pnav:1.0113,fitted:1.0441,resid:-0.0328,r2y:0.0487},
 {d:"2023-06-30",t:"BXSL",pnav:1.0403,fitted:1.1020,resid:-0.0617,r2y:0.0487},
 {d:"2023-06-30",t:"GBDC",pnav:0.9103,fitted:0.9372,resid:-0.0269,r2y:0.0487},
 {d:"2023-06-30",t:"OBDC",pnav:0.8794,fitted:0.9057,resid:-0.0263,r2y:0.0487},
 {d:"2023-06-30",t:"TCPC",pnav:0.8431,fitted:0.9017,resid:-0.0586,r2y:0.0487},
 {d:"2023-06-30",t:"TSLX",pnav:1.1165,fitted:1.2224,resid:-0.1060,r2y:0.0487},
-{d:"2023-07-28",t:"ARCC",pnav:1.0522,fitted:1.0441,resid:0.0081,r2y:0.0487},
-{d:"2023-07-28",t:"BXSL",pnav:1.0859,fitted:1.1020,resid:-0.0161,r2y:0.0487},
-{d:"2023-07-28",t:"GBDC",pnav:0.9420,fitted:0.9372,resid:0.0048,r2y:0.0487},
-{d:"2023-07-28",t:"OBDC",pnav:0.9260,fitted:0.9057,resid:0.0203,r2y:0.0487},
-{d:"2023-07-28",t:"TCPC",pnav:0.9312,fitted:0.9017,resid:0.0295,r2y:0.0487},
-{d:"2023-07-28",t:"TSLX",pnav:1.1864,fitted:1.2224,resid:-0.0361,r2y:0.0487},
-{d:"2023-08-25",t:"ARCC",pnav:1.0355,fitted:1.0396,resid:-0.0041,r2y:0.0503},
-{d:"2023-08-25",t:"BXSL",pnav:1.0331,fitted:1.0975,resid:-0.0645,r2y:0.0503},
-{d:"2023-08-25",t:"GBDC",pnav:0.9892,fitted:0.9328,resid:0.0565,r2y:0.0503},
-{d:"2023-08-25",t:"OBDC",pnav:0.8912,fitted:0.9012,resid:-0.0100,r2y:0.0503},
-{d:"2023-08-25",t:"TCPC",pnav:0.9389,fitted:0.8972,resid:0.0417,r2y:0.0503},
-{d:"2023-08-25",t:"TSLX",pnav:1.1959,fitted:1.2180,resid:-0.0220,r2y:0.0503},
+{d:"2023-07-31",t:"ARCC",pnav:1.0549,fitted:1.0438,resid:0.0111,r2y:0.0488},
+{d:"2023-07-31",t:"BXSL",pnav:1.0814,fitted:1.1017,resid:-0.0204,r2y:0.0488},
+{d:"2023-07-31",t:"GBDC",pnav:0.9393,fitted:0.9370,resid:0.0024,r2y:0.0488},
+{d:"2023-07-31",t:"OBDC",pnav:0.9279,fitted:0.9054,resid:0.0225,r2y:0.0488},
+{d:"2023-07-31",t:"TCPC",pnav:0.9335,fitted:0.9014,resid:0.0321,r2y:0.0488},
+{d:"2023-07-31",t:"TSLX",pnav:1.1882,fitted:1.2222,resid:-0.0340,r2y:0.0488},
+{d:"2023-08-31",t:"ARCC",pnav:1.0490,fitted:1.0447,resid:0.0043,r2y:0.0485},
+{d:"2023-08-31",t:"BXSL",pnav:1.0567,fitted:1.1026,resid:-0.0459,r2y:0.0485},
+{d:"2023-08-31",t:"GBDC",pnav:0.9697,fitted:0.9378,resid:0.0319,r2y:0.0485},
+{d:"2023-08-31",t:"OBDC",pnav:0.9122,fitted:0.9063,resid:0.0059,r2y:0.0485},
+{d:"2023-08-31",t:"TCPC",pnav:0.9536,fitted:0.9022,resid:0.0514,r2y:0.0485},
+{d:"2023-08-31",t:"TSLX",pnav:1.2049,fitted:1.2230,resid:-0.0181,r2y:0.0485},
 {d:"2023-09-29",t:"ARCC",pnav:1.0479,fitted:1.0396,resid:0.0083,r2y:0.0503},
 {d:"2023-09-29",t:"BXSL",pnav:1.0403,fitted:1.0975,resid:-0.0572,r2y:0.0503},
 {d:"2023-09-29",t:"GBDC",pnav:0.9892,fitted:0.9328,resid:0.0565,r2y:0.0503},
 {d:"2023-09-29",t:"OBDC",pnav:0.9076,fitted:0.9012,resid:0.0064,r2y:0.0503},
 {d:"2023-09-29",t:"TCPC",pnav:0.9073,fitted:0.8972,resid:0.0101,r2y:0.0503},
 {d:"2023-09-29",t:"TSLX",pnav:1.2210,fitted:1.2180,resid:0.0031,r2y:0.0503},
-{d:"2023-10-27",t:"ARCC",pnav:0.9826,fitted:1.0221,resid:-0.0395,r2y:0.0499},
-{d:"2023-10-27",t:"BXSL",pnav:1.0200,fitted:1.0886,resid:-0.0686,r2y:0.0499},
-{d:"2023-10-27",t:"GBDC",pnav:0.9421,fitted:0.9637,resid:-0.0216,r2y:0.0499},
-{d:"2023-10-27",t:"OBDC",pnav:0.8461,fitted:0.9224,resid:-0.0763,r2y:0.0499},
-{d:"2023-10-27",t:"TCPC",pnav:0.8153,fitted:0.8981,resid:-0.0829,r2y:0.0499},
-{d:"2023-10-27",t:"TSLX",pnav:1.1226,fitted:1.2029,resid:-0.0803,r2y:0.0499},
-{d:"2023-11-24",t:"ARCC",pnav:1.0474,fitted:1.0241,resid:0.0233,r2y:0.0492},
-{d:"2023-11-24",t:"BXSL",pnav:1.0787,fitted:1.0905,resid:-0.0118,r2y:0.0492},
-{d:"2023-11-24",t:"GBDC",pnav:1.0113,fitted:0.9657,resid:0.0456,r2y:0.0492},
-{d:"2023-11-24",t:"OBDC",pnav:0.9623,fitted:0.9244,resid:0.0379,r2y:0.0492},
-{d:"2023-11-24",t:"TCPC",pnav:0.9324,fitted:0.9001,resid:0.0323,r2y:0.0492},
-{d:"2023-11-24",t:"TSLX",pnav:1.2434,fitted:1.2049,resid:0.0385,r2y:0.0492},
+{d:"2023-10-31",t:"ARCC",pnav:0.9984,fitted:1.0199,resid:-0.0215,r2y:0.0507},
+{d:"2023-10-31",t:"BXSL",pnav:1.0313,fitted:1.0863,resid:-0.0550,r2y:0.0507},
+{d:"2023-10-31",t:"GBDC",pnav:0.9587,fitted:0.9615,resid:-0.0028,r2y:0.0507},
+{d:"2023-10-31",t:"OBDC",pnav:0.8597,fitted:0.9202,resid:-0.0605,r2y:0.0507},
+{d:"2023-10-31",t:"TCPC",pnav:0.8255,fitted:0.8959,resid:-0.0704,r2y:0.0507},
+{d:"2023-10-31",t:"TSLX",pnav:1.1438,fitted:1.2007,resid:-0.0569,r2y:0.0507},
+{d:"2023-11-30",t:"ARCC",pnav:1.0437,fitted:1.0294,resid:0.0143,r2y:0.0473},
+{d:"2023-11-30",t:"BXSL",pnav:1.0690,fitted:1.0958,resid:-0.0269,r2y:0.0473},
+{d:"2023-11-30",t:"GBDC",pnav:0.9907,fitted:0.9710,resid:0.0197,r2y:0.0473},
+{d:"2023-11-30",t:"OBDC",pnav:0.9519,fitted:0.9297,resid:0.0222,r2y:0.0473},
+{d:"2023-11-30",t:"TCPC",pnav:0.9355,fitted:0.9054,resid:0.0301,r2y:0.0473},
+{d:"2023-11-30",t:"TSLX",pnav:1.2351,fitted:1.2102,resid:0.0249,r2y:0.0473},
 {d:"2023-12-29",t:"ARCC",pnav:1.0548,fitted:1.0434,resid:0.0114,r2y:0.0423},
 {d:"2023-12-29",t:"BXSL",pnav:1.0414,fitted:1.1099,resid:-0.0684,r2y:0.0423},
 {d:"2023-12-29",t:"GBDC",pnav:1.0053,fitted:0.9850,resid:0.0203,r2y:0.0423},
 {d:"2023-12-29",t:"OBDC",pnav:0.9584,fitted:0.9437,resid:0.0147,r2y:0.0423},
 {d:"2023-12-29",t:"TCPC",pnav:0.9072,fitted:0.9194,resid:-0.0122,r2y:0.0423},
 {d:"2023-12-29",t:"TSLX",pnav:1.2728,fitted:1.2242,resid:0.0486,r2y:0.0423},
-{d:"2024-01-26",t:"ARCC",pnav:1.0686,fitted:1.0884,resid:-0.0198,r2y:0.0434},
-{d:"2024-01-26",t:"BXSL",pnav:1.0735,fitted:1.1505,resid:-0.0770,r2y:0.0434},
-{d:"2024-01-26",t:"GBDC",pnav:1.0386,fitted:0.9851,resid:0.0535,r2y:0.0434},
-{d:"2024-01-26",t:"OBDC",pnav:0.9773,fitted:0.9513,resid:0.0260,r2y:0.0434},
-{d:"2024-01-26",t:"TCPC",pnav:0.9857,fitted:0.8846,resid:0.1011,r2y:0.0434},
-{d:"2024-01-26",t:"TSLX",pnav:1.3063,fitted:1.2476,resid:0.0588,r2y:0.0434},
-{d:"2024-02-23",t:"ARCC",pnav:1.0452,fitted:1.0792,resid:-0.0339,r2y:0.0467},
-{d:"2024-02-23",t:"BXSL",pnav:1.1167,fitted:1.1412,resid:-0.0246,r2y:0.0467},
-{d:"2024-02-23",t:"GBDC",pnav:1.0592,fitted:0.9758,resid:0.0834,r2y:0.0467},
-{d:"2024-02-23",t:"OBDC",pnav:0.9761,fitted:0.9421,resid:0.0340,r2y:0.0467},
-{d:"2024-02-23",t:"TCPC",pnav:0.9412,fitted:0.8754,resid:0.0658,r2y:0.0467},
-{d:"2024-02-23",t:"TSLX",pnav:1.2840,fitted:1.2383,resid:0.0457,r2y:0.0467},
+{d:"2024-01-31",t:"ARCC",pnav:1.0515,fitted:1.0904,resid:-0.0389,r2y:0.0427},
+{d:"2024-01-31",t:"BXSL",pnav:1.0731,fitted:1.1524,resid:-0.0793,r2y:0.0427},
+{d:"2024-01-31",t:"GBDC",pnav:1.0153,fitted:0.9870,resid:0.0283,r2y:0.0427},
+{d:"2024-01-31",t:"OBDC",pnav:0.9592,fitted:0.9533,resid:0.0059,r2y:0.0427},
+{d:"2024-01-31",t:"TCPC",pnav:0.9647,fitted:0.8866,resid:0.0781,r2y:0.0427},
+{d:"2024-01-31",t:"TSLX",pnav:1.2711,fitted:1.2495,resid:0.0216,r2y:0.0427},
+{d:"2024-02-29",t:"ARCC",pnav:1.0515,fitted:1.0800,resid:-0.0285,r2y:0.0464},
+{d:"2024-02-29",t:"BXSL",pnav:1.1103,fitted:1.1421,resid:-0.0318,r2y:0.0464},
+{d:"2024-02-29",t:"GBDC",pnav:1.0359,fitted:0.9767,resid:0.0593,r2y:0.0464},
+{d:"2024-02-29",t:"OBDC",pnav:0.9761,fitted:0.9429,resid:0.0331,r2y:0.0464},
+{d:"2024-02-29",t:"TCPC",pnav:0.9008,fitted:0.8762,resid:0.0246,r2y:0.0464},
+{d:"2024-02-29",t:"TSLX",pnav:1.2811,fitted:1.2392,resid:0.0419,r2y:0.0464},
 {d:"2024-03-29",t:"ARCC",pnav:1.0821,fitted:1.0814,resid:0.0007,r2y:0.0459},
 {d:"2024-03-29",t:"BXSL",pnav:1.1684,fitted:1.1435,resid:0.0249,r2y:0.0459},
 {d:"2024-03-29",t:"GBDC",pnav:1.1065,fitted:0.9781,resid:0.1284,r2y:0.0459},
 {d:"2024-03-29",t:"OBDC",pnav:0.9955,fitted:0.9443,resid:0.0512,r2y:0.0459},
 {d:"2024-03-29",t:"TCPC",pnav:0.8765,fitted:0.8776,resid:-0.0011,r2y:0.0459},
 {d:"2024-03-29",t:"TSLX",pnav:1.2576,fitted:1.2406,resid:0.0171,r2y:0.0459},
-{d:"2024-04-26",t:"ARCC",pnav:1.0640,fitted:1.0449,resid:0.0191,r2y:0.0496},
-{d:"2024-04-26",t:"BXSL",pnav:1.1943,fitted:1.0806,resid:0.1137,r2y:0.0496},
-{d:"2024-04-26",t:"GBDC",pnav:1.1508,fitted:0.9831,resid:0.1677,r2y:0.0496},
-{d:"2024-04-26",t:"OBDC",pnav:1.0297,fitted:0.9139,resid:0.1158,r2y:0.0496},
-{d:"2024-04-26",t:"TCPC",pnav:0.9057,fitted:0.9013,resid:0.0045,r2y:0.0496},
-{d:"2024-04-26",t:"TSLX",pnav:1.2627,fitted:1.1945,resid:0.0681,r2y:0.0496},
+{d:"2024-04-30",t:"ARCC",pnav:1.0553,fitted:1.0426,resid:0.0127,r2y:0.0504},
+{d:"2024-04-30",t:"BXSL",pnav:1.1794,fitted:1.0783,resid:0.1010,r2y:0.0504},
+{d:"2024-04-30",t:"GBDC",pnav:1.1488,fitted:0.9809,resid:0.1680,r2y:0.0504},
+{d:"2024-04-30",t:"OBDC",pnav:1.0278,fitted:0.9117,resid:0.1161,r2y:0.0504},
+{d:"2024-04-30",t:"TCPC",pnav:0.9048,fitted:0.8990,resid:0.0058,r2y:0.0504},
+{d:"2024-04-30",t:"TSLX",pnav:1.2632,fitted:1.1923,resid:0.0710,r2y:0.0504},
 {d:"2024-05-31",t:"ARCC",pnav:1.1045,fitted:1.0468,resid:0.0576,r2y:0.0489},
 {d:"2024-05-31",t:"BXSL",pnav:1.1712,fitted:1.0825,resid:0.0886,r2y:0.0489},
 {d:"2024-05-31",t:"GBDC",pnav:1.0959,fitted:0.9851,resid:0.1108,r2y:0.0489},
@@ -4032,42 +4043,42 @@ const TS = [
 {d:"2024-06-28",t:"OBDC",pnav:0.9929,fitted:0.9209,resid:0.0720,r2y:0.0471},
 {d:"2024-06-28",t:"TCPC",pnav:0.9695,fitted:0.9083,resid:0.0612,r2y:0.0471},
 {d:"2024-06-28",t:"TSLX",pnav:1.2434,fitted:1.2015,resid:0.0419,r2y:0.0471},
-{d:"2024-07-26",t:"ARCC",pnav:1.0683,fitted:1.0959,resid:-0.0276,r2y:0.0436},
-{d:"2024-07-26",t:"BXSL",pnav:1.1309,fitted:1.1083,resid:0.0226,r2y:0.0436},
-{d:"2024-07-26",t:"GBDC",pnav:1.0085,fitted:1.0096,resid:-0.0011,r2y:0.0436},
-{d:"2024-07-26",t:"OBDC",pnav:1.0085,fitted:0.9433,resid:0.0652,r2y:0.0436},
-{d:"2024-07-26",t:"TCPC",pnav:1.0598,fitted:0.8519,resid:0.2079,r2y:0.0436},
-{d:"2024-07-26",t:"TSLX",pnav:1.2222,fitted:1.2220,resid:0.0002,r2y:0.0436},
+{d:"2024-07-31",t:"ARCC",pnav:1.0678,fitted:1.0979,resid:-0.0300,r2y:0.0429},
+{d:"2024-07-31",t:"BXSL",pnav:1.1276,fitted:1.1103,resid:0.0174,r2y:0.0429},
+{d:"2024-07-31",t:"GBDC",pnav:0.9974,fitted:1.0115,resid:-0.0141,r2y:0.0429},
+{d:"2024-07-31",t:"OBDC",pnav:1.0104,fitted:0.9453,resid:0.0651,r2y:0.0429},
+{d:"2024-07-31",t:"TCPC",pnav:1.0363,fitted:0.8538,resid:0.1825,r2y:0.0429},
+{d:"2024-07-31",t:"TSLX",pnav:1.2141,fitted:1.2240,resid:-0.0099,r2y:0.0429},
 {d:"2024-08-30",t:"ARCC",pnav:1.0750,fitted:1.1085,resid:-0.0335,r2y:0.0391},
 {d:"2024-08-30",t:"BXSL",pnav:1.1089,fitted:1.1209,resid:-0.0120,r2y:0.0391},
 {d:"2024-08-30",t:"GBDC",pnav:0.9719,fitted:1.0222,resid:-0.0502,r2y:0.0391},
 {d:"2024-08-30",t:"OBDC",pnav:0.9870,fitted:0.9559,resid:0.0311,r2y:0.0391},
 {d:"2024-08-30",t:"TCPC",pnav:0.8990,fitted:0.8645,resid:0.0346,r2y:0.0391},
 {d:"2024-08-30",t:"TSLX",pnav:1.2356,fitted:1.2346,resid:0.0010,r2y:0.0391},
-{d:"2024-09-27",t:"ARCC",pnav:1.0663,fitted:1.1186,resid:-0.0523,r2y:0.0355},
-{d:"2024-09-27",t:"BXSL",pnav:1.1107,fitted:1.1310,resid:-0.0203,r2y:0.0355},
-{d:"2024-09-27",t:"GBDC",pnav:0.9765,fitted:1.0323,resid:-0.0558,r2y:0.0355},
-{d:"2024-09-27",t:"OBDC",pnav:0.9766,fitted:0.9660,resid:0.0106,r2y:0.0355},
-{d:"2024-09-27",t:"TCPC",pnav:0.8167,fitted:0.8746,resid:-0.0579,r2y:0.0355},
-{d:"2024-09-27",t:"TSLX",pnav:1.2030,fitted:1.2447,resid:-0.0417,r2y:0.0355},
-{d:"2024-10-25",t:"ARCC",pnav:1.0916,fitted:1.0829,resid:0.0087,r2y:0.0411},
-{d:"2024-10-25",t:"BXSL",pnav:1.1485,fitted:1.1080,resid:0.0405,r2y:0.0411},
-{d:"2024-10-25",t:"GBDC",pnav:1.0059,fitted:1.0035,resid:0.0024,r2y:0.0411},
-{d:"2024-10-25",t:"OBDC",pnav:0.9915,fitted:0.9237,resid:0.0678,r2y:0.0411},
-{d:"2024-10-25",t:"TCPC",pnav:0.8299,fitted:0.8415,resid:-0.0116,r2y:0.0411},
-{d:"2024-10-25",t:"TSLX",pnav:1.2074,fitted:1.2396,resid:-0.0323,r2y:0.0411},
+{d:"2024-09-30",t:"ARCC",pnav:1.0592,fitted:1.0955,resid:-0.0363,r2y:0.0366},
+{d:"2024-09-30",t:"BXSL",pnav:1.0741,fitted:1.1207,resid:-0.0466,r2y:0.0366},
+{d:"2024-09-30",t:"GBDC",pnav:0.9947,fitted:1.0161,resid:-0.0214,r2y:0.0366},
+{d:"2024-09-30",t:"OBDC",pnav:0.9535,fitted:0.9363,resid:0.0172,r2y:0.0366},
+{d:"2024-09-30",t:"TCPC",pnav:0.8200,fitted:0.8541,resid:-0.0341,r2y:0.0366},
+{d:"2024-09-30",t:"TSLX",pnav:1.1992,fitted:1.2522,resid:-0.0530,r2y:0.0366},
+{d:"2024-10-31",t:"ARCC",pnav:1.0693,fitted:1.0815,resid:-0.0122,r2y:0.0416},
+{d:"2024-10-31",t:"BXSL",pnav:1.1415,fitted:1.1066,resid:0.0349,r2y:0.0416},
+{d:"2024-10-31",t:"GBDC",pnav:0.9967,fitted:1.0021,resid:-0.0054,r2y:0.0416},
+{d:"2024-10-31",t:"OBDC",pnav:0.9843,fitted:0.9223,resid:0.0620,r2y:0.0416},
+{d:"2024-10-31",t:"TCPC",pnav:0.7933,fitted:0.8401,resid:-0.0468,r2y:0.0416},
+{d:"2024-10-31",t:"TSLX",pnav:1.1916,fitted:1.2382,resid:-0.0466,r2y:0.0416},
 {d:"2024-11-29",t:"ARCC",pnav:1.1204,fitted:1.0823,resid:0.0381,r2y:0.0413},
 {d:"2024-11-29",t:"BXSL",pnav:1.1947,fitted:1.1075,resid:0.0872,r2y:0.0413},
 {d:"2024-11-29",t:"GBDC",pnav:1.0316,fitted:1.0030,resid:0.0286,r2y:0.0413},
 {d:"2024-11-29",t:"OBDC",pnav:0.9961,fitted:0.9232,resid:0.0729,r2y:0.0413},
 {d:"2024-11-29",t:"TCPC",pnav:0.9308,fitted:0.8409,resid:0.0898,r2y:0.0413},
 {d:"2024-11-29",t:"TSLX",pnav:1.2547,fitted:1.2391,resid:0.0156,r2y:0.0413},
-{d:"2024-12-27",t:"ARCC",pnav:1.1138,fitted:1.0773,resid:0.0365,r2y:0.0431},
-{d:"2024-12-27",t:"BXSL",pnav:1.2200,fitted:1.1024,resid:0.1176,r2y:0.0431},
-{d:"2024-12-27",t:"GBDC",pnav:1.0039,fitted:0.9979,resid:0.0060,r2y:0.0431},
-{d:"2024-12-27",t:"OBDC",pnav:1.0124,fitted:0.9181,resid:0.0943,r2y:0.0431},
-{d:"2024-12-27",t:"TCPC",pnav:0.8467,fitted:0.8359,resid:0.0108,r2y:0.0431},
-{d:"2024-12-27",t:"TSLX",pnav:1.2348,fitted:1.2340,resid:0.0008,r2y:0.0431},
+{d:"2024-12-31",t:"ARCC",pnav:1.1006,fitted:1.0720,resid:0.0286,r2y:0.0425},
+{d:"2024-12-31",t:"BXSL",pnav:1.1796,fitted:1.0673,resid:0.1124,r2y:0.0425},
+{d:"2024-12-31",t:"GBDC",pnav:1.0020,fitted:0.9416,resid:0.0604,r2y:0.0425},
+{d:"2024-12-31",t:"OBDC",pnav:0.9908,fitted:0.9059,resid:0.0849,r2y:0.0425},
+{d:"2024-12-31",t:"TCPC",pnav:0.9437,fitted:0.8430,resid:0.1007,r2y:0.0425},
+{d:"2024-12-31",t:"TSLX",pnav:1.2413,fitted:1.2265,resid:0.0148,r2y:0.0425},
 {d:"2025-01-31",t:"ARCC",pnav:1.1900,fitted:1.0728,resid:0.1172,r2y:0.0422},
 {d:"2025-01-31",t:"BXSL",pnav:1.2256,fitted:1.0681,resid:0.1575,r2y:0.0422},
 {d:"2025-01-31",t:"GBDC",pnav:1.0397,fitted:0.9425,resid:0.0972,r2y:0.0422},
@@ -4080,48 +4091,48 @@ const TS = [
 {d:"2025-02-28",t:"OBDC",pnav:1.0131,fitted:0.9132,resid:0.0999,r2y:0.0399},
 {d:"2025-02-28",t:"TCPC",pnav:0.9144,fitted:0.8503,resid:0.0641,r2y:0.0399},
 {d:"2025-02-28",t:"TSLX",pnav:1.3700,fitted:1.2337,resid:0.1363,r2y:0.0399},
-{d:"2025-03-28",t:"ARCC",pnav:1.1116,fitted:1.0821,resid:0.0295,r2y:0.0389},
-{d:"2025-03-28",t:"BXSL",pnav:1.2023,fitted:1.0774,resid:0.1249,r2y:0.0389},
-{d:"2025-03-28",t:"GBDC",pnav:1.0079,fitted:0.9517,resid:0.0562,r2y:0.0389},
-{d:"2025-03-28",t:"OBDC",pnav:0.9856,fitted:0.9160,resid:0.0696,r2y:0.0389},
-{d:"2025-03-28",t:"TCPC",pnav:0.8657,fitted:0.8531,resid:0.0126,r2y:0.0389},
-{d:"2025-03-28",t:"TSLX",pnav:1.3019,fitted:1.2365,resid:0.0653,r2y:0.0389},
-{d:"2025-04-25",t:"ARCC",pnav:1.0651,fitted:1.0785,resid:-0.0134,r2y:0.0374},
-{d:"2025-04-25",t:"BXSL",pnav:1.0821,fitted:1.0567,resid:0.0255,r2y:0.0374},
-{d:"2025-04-25",t:"GBDC",pnav:0.9601,fitted:0.9452,resid:0.0149,r2y:0.0374},
-{d:"2025-04-25",t:"OBDC",pnav:0.9419,fitted:0.9612,resid:-0.0193,r2y:0.0374},
-{d:"2025-04-25",t:"TCPC",pnav:0.7647,fitted:0.8616,resid:-0.0969,r2y:0.0374},
-{d:"2025-04-25",t:"TSLX",pnav:1.2277,fitted:1.2358,resid:-0.0081,r2y:0.0374},
+{d:"2025-03-31",t:"ARCC",pnav:1.1181,fitted:1.0743,resid:0.0438,r2y:0.0389},
+{d:"2025-03-31",t:"BXSL",pnav:1.1815,fitted:1.0525,resid:0.1290,r2y:0.0389},
+{d:"2025-03-31",t:"GBDC",pnav:1.0066,fitted:0.9410,resid:0.0656,r2y:0.0389},
+{d:"2025-03-31",t:"OBDC",pnav:0.9683,fitted:0.9570,resid:0.0113,r2y:0.0389},
+{d:"2025-03-31",t:"TCPC",pnav:0.8725,fitted:0.8574,resid:0.0152,r2y:0.0389},
+{d:"2025-03-31",t:"TSLX",pnav:1.3134,fitted:1.2316,resid:0.0818,r2y:0.0389},
+{d:"2025-04-30",t:"ARCC",pnav:1.0424,fitted:1.0824,resid:-0.0400,r2y:0.0360},
+{d:"2025-04-30",t:"BXSL",pnav:1.0697,fitted:1.0606,resid:0.0092,r2y:0.0360},
+{d:"2025-04-30",t:"GBDC",pnav:0.9521,fitted:0.9492,resid:0.0030,r2y:0.0360},
+{d:"2025-04-30",t:"OBDC",pnav:0.9254,fitted:0.9651,resid:-0.0397,r2y:0.0360},
+{d:"2025-04-30",t:"TCPC",pnav:0.7451,fitted:0.8655,resid:-0.1204,r2y:0.0360},
+{d:"2025-04-30",t:"TSLX",pnav:1.2183,fitted:1.2398,resid:-0.0214,r2y:0.0360},
 {d:"2025-05-30",t:"ARCC",pnav:1.1125,fitted:1.0743,resid:0.0383,r2y:0.0389},
 {d:"2025-05-30",t:"BXSL",pnav:1.1639,fitted:1.0525,resid:0.1115,r2y:0.0389},
 {d:"2025-05-30",t:"GBDC",pnav:1.0113,fitted:0.9410,resid:0.0703,r2y:0.0389},
 {d:"2025-05-30",t:"OBDC",pnav:0.9676,fitted:0.9570,resid:0.0107,r2y:0.0389},
 {d:"2025-05-30",t:"TCPC",pnav:0.8540,fitted:0.8574,resid:-0.0034,r2y:0.0389},
 {d:"2025-05-30",t:"TSLX",pnav:1.3668,fitted:1.2316,resid:0.1352,r2y:0.0389},
-{d:"2025-06-27",t:"ARCC",pnav:1.1075,fitted:1.0787,resid:0.0287,r2y:0.0373},
-{d:"2025-06-27",t:"BXSL",pnav:1.1442,fitted:1.0569,resid:0.0873,r2y:0.0373},
-{d:"2025-06-27",t:"GBDC",pnav:0.9601,fitted:0.9455,resid:0.0146,r2y:0.0373},
-{d:"2025-06-27",t:"OBDC",pnav:0.9604,fitted:0.9614,resid:-0.0011,r2y:0.0373},
-{d:"2025-06-27",t:"TCPC",pnav:0.8322,fitted:0.8619,resid:-0.0296,r2y:0.0373},
-{d:"2025-06-27",t:"TSLX",pnav:1.3950,fitted:1.2361,resid:0.1588,r2y:0.0373},
-{d:"2025-07-25",t:"ARCC",pnav:1.1613,fitted:1.0563,resid:0.1050,r2y:0.0391},
-{d:"2025-07-25",t:"BXSL",pnav:1.1873,fitted:1.0144,resid:0.1729,r2y:0.0391},
-{d:"2025-07-25",t:"GBDC",pnav:1.0240,fitted:0.9467,resid:0.0773,r2y:0.0391},
-{d:"2025-07-25",t:"OBDC",pnav:0.9880,fitted:0.8885,resid:0.0996,r2y:0.0391},
-{d:"2025-07-25",t:"TCPC",pnav:0.8622,fitted:0.8207,resid:0.0416,r2y:0.0391},
-{d:"2025-07-25",t:"TSLX",pnav:1.4240,fitted:1.2074,resid:0.2166,r2y:0.0391},
+{d:"2025-06-30",t:"ARCC",pnav:1.1035,fitted:1.0616,resid:0.0419,r2y:0.0372},
+{d:"2025-06-30",t:"BXSL",pnav:1.1251,fitted:1.0198,resid:0.1054,r2y:0.0372},
+{d:"2025-06-30",t:"GBDC",pnav:0.9767,fitted:0.9520,resid:0.0247,r2y:0.0372},
+{d:"2025-06-30",t:"OBDC",pnav:0.9541,fitted:0.8938,resid:0.0603,r2y:0.0372},
+{d:"2025-06-30",t:"TCPC",pnav:0.8840,fitted:0.8260,resid:0.0580,r2y:0.0372},
+{d:"2025-06-30",t:"TSLX",pnav:1.3867,fitted:1.2128,resid:0.1740,r2y:0.0372},
+{d:"2025-07-31",t:"ARCC",pnav:1.1372,fitted:1.0554,resid:0.0818,r2y:0.0394},
+{d:"2025-07-31",t:"BXSL",pnav:1.1544,fitted:1.0136,resid:0.1408,r2y:0.0394},
+{d:"2025-07-31",t:"GBDC",pnav:0.9973,fitted:0.9458,resid:0.0515,r2y:0.0394},
+{d:"2025-07-31",t:"OBDC",pnav:0.9501,fitted:0.8876,resid:0.0625,r2y:0.0394},
+{d:"2025-07-31",t:"TCPC",pnav:0.8232,fitted:0.8198,resid:0.0034,r2y:0.0394},
+{d:"2025-07-31",t:"TSLX",pnav:1.4141,fitted:1.2066,resid:0.2075,r2y:0.0394},
 {d:"2025-08-29",t:"ARCC",pnav:1.1256,fitted:1.0652,resid:0.0604,r2y:0.0359},
 {d:"2025-08-29",t:"BXSL",pnav:1.0966,fitted:1.0234,resid:0.0732,r2y:0.0359},
 {d:"2025-08-29",t:"GBDC",pnav:0.9947,fitted:0.9556,resid:0.0390,r2y:0.0359},
 {d:"2025-08-29",t:"OBDC",pnav:0.9541,fitted:0.8974,resid:0.0567,r2y:0.0359},
 {d:"2025-08-29",t:"TCPC",pnav:0.8278,fitted:0.8296,resid:-0.0019,r2y:0.0359},
 {d:"2025-08-29",t:"TSLX",pnav:1.4240,fitted:1.2164,resid:0.2076,r2y:0.0359},
-{d:"2025-09-26",t:"ARCC",pnav:1.0281,fitted:1.0641,resid:-0.0360,r2y:0.0363},
-{d:"2025-09-26",t:"BXSL",pnav:0.9876,fitted:1.0223,resid:-0.0347,r2y:0.0363},
-{d:"2025-09-26",t:"GBDC",pnav:0.9193,fitted:0.9545,resid:-0.0352,r2y:0.0363},
-{d:"2025-09-26",t:"OBDC",pnav:0.8809,fitted:0.8963,resid:-0.0154,r2y:0.0363},
-{d:"2025-09-26",t:"TCPC",pnav:0.7164,fitted:0.8285,resid:-0.1121,r2y:0.0363},
-{d:"2025-09-26",t:"TSLX",pnav:1.3279,fitted:1.2153,resid:0.1126,r2y:0.0363},
+{d:"2025-09-30",t:"ARCC",pnav:1.0200,fitted:1.0593,resid:-0.0393,r2y:0.0360},
+{d:"2025-09-30",t:"BXSL",pnav:0.9602,fitted:1.0578,resid:-0.0976,r2y:0.0360},
+{d:"2025-09-30",t:"GBDC",pnav:0.9145,fitted:0.9355,resid:-0.0211,r2y:0.0360},
+{d:"2025-09-30",t:"OBDC",pnav:0.8576,fitted:0.8969,resid:-0.0393,r2y:0.0360},
+{d:"2025-09-30",t:"TCPC",pnav:0.7118,fitted:0.8102,resid:-0.0984,r2y:0.0360},
+{d:"2025-09-30",t:"TSLX",pnav:1.3337,fitted:1.2312,resid:0.1025,r2y:0.0360},
 {d:"2025-10-31",t:"ARCC",pnav:1.0170,fitted:1.0593,resid:-0.0423,r2y:0.0360},
 {d:"2025-10-31",t:"BXSL",pnav:0.9738,fitted:1.0578,resid:-0.0840,r2y:0.0360},
 {d:"2025-10-31",t:"GBDC",pnav:0.9412,fitted:0.9355,resid:0.0057,r2y:0.0360},
@@ -4134,12 +4145,12 @@ const TS = [
 {d:"2025-11-28",t:"OBDC",pnav:0.8845,fitted:0.9006,resid:-0.0161,r2y:0.0347},
 {d:"2025-11-28",t:"TCPC",pnav:0.6889,fitted:0.8138,resid:-0.1250,r2y:0.0347},
 {d:"2025-11-28",t:"TSLX",pnav:1.2730,fitted:1.2348,resid:0.0382,r2y:0.0347},
-{d:"2025-12-26",t:"ARCC",pnav:1.0095,fitted:1.0633,resid:-0.0538,r2y:0.0346},
-{d:"2025-12-26",t:"BXSL",pnav:1.0033,fitted:1.0618,resid:-0.0585,r2y:0.0346},
-{d:"2025-12-26",t:"GBDC",pnav:0.9051,fitted:0.9395,resid:-0.0343,r2y:0.0346},
-{d:"2025-12-26",t:"OBDC",pnav:0.8549,fitted:0.9008,resid:-0.0459,r2y:0.0346},
-{d:"2025-12-26",t:"TCPC",pnav:0.6246,fitted:0.8141,resid:-0.1896,r2y:0.0346},
-{d:"2025-12-26",t:"TSLX",pnav:1.2666,fitted:1.2351,resid:0.0315,r2y:0.0346},
+{d:"2025-12-31",t:"ARCC",pnav:1.0145,fitted:1.0576,resid:-0.0430,r2y:0.0347},
+{d:"2025-12-31",t:"BXSL",pnav:0.9781,fitted:1.0293,resid:-0.0513,r2y:0.0347},
+{d:"2025-12-31",t:"GBDC",pnav:0.9144,fitted:0.9394,resid:-0.0250,r2y:0.0347},
+{d:"2025-12-31",t:"OBDC",pnav:0.8393,fitted:0.8851,resid:-0.0458,r2y:0.0347},
+{d:"2025-12-31",t:"TCPC",pnav:0.7737,fitted:0.7403,resid:0.0334,r2y:0.0347},
+{d:"2025-12-31",t:"TSLX",pnav:1.2792,fitted:1.2158,resid:0.0633,r2y:0.0347},
 {d:"2026-01-30",t:"ARCC",pnav:0.9975,fitted:1.0562,resid:-0.0587,r2y:0.0352},
 {d:"2026-01-30",t:"BXSL",pnav:0.9532,fitted:1.0279,resid:-0.0748,r2y:0.0352},
 {d:"2026-01-30",t:"GBDC",pnav:0.9023,fitted:0.9380,resid:-0.0357,r2y:0.0352},
@@ -4160,6 +4171,8 @@ const TS = [
 {d:"2026-03-20",t:"TSLX",pnav:1.0453,fitted:1.2044,resid:-0.1590,r2y:0.0388}
 ];
 
+const SE = {"const": 0.054382, "tsy_2y": 0.084036, "nii_ps": 0.013219, "fv_cost": 0.050681, "debt_nav": 0.007395, "BXSL": 0.005066, "GBDC": 0.0034, "OBDC": 0.003159, "TCPC": 0.0039, "TSLX": 0.002785};
+
 function predict(ticker, rate2y) {
   const f = LATEST[ticker];
   if (!f) return null;
@@ -4167,319 +4180,426 @@ function predict(ticker, rate2y) {
   return COEFF.const + COEFF.tsy_2y * rate2y + COEFF.nii_ps * f.nii_ps + COEFF.fv_cost * f.fv_cost + COEFF.debt_nav * f.debt_nav + fe;
 }
 
-const PNAV_TABS = ["Scenario","Waterfall","Model","Residuals","Data"];
+const PNAV_TABS = ["Scenario","Waterfall","Yield Bridge","Implied Credit","Model","Residuals","Data"];
 
-function CoeffRow({name, label, interp}) {
-  const b = COEFF[name], t = TSTAT[name];
-  const sig = Math.abs(t) > 2.58 ? "***" : Math.abs(t) > 1.96 ? "**" : Math.abs(t) > 1.65 ? "*" : "";
-  return (
-    <tr style={{borderBottom:"1px solid #E2E8F0"}}>
-      <td style={{padding:"4px 8px",fontWeight:600}}>{label}</td>
-      <td style={{padding:"4px 8px",textAlign:"right",color:b<0?RED:NAVY}}>{b.toFixed(4)}</td>
-      <td style={{padding:"4px 8px",textAlign:"right",fontWeight:Math.abs(t)>1.96?700:400}}>{t.toFixed(1)}</td>
-      <td style={{padding:"4px 8px",textAlign:"right",color:GOLD,fontWeight:700}}>{sig}</td>
-      <td style={{padding:"4px 8px",fontSize:10,color:"#64748B"}}>{interp}</td>
-    </tr>
-  );
+function StatBox({ label, value, sub, color }) {
+  return <div style={{textAlign:"center",padding:"12px 16px",background:"#F8FAFC",borderRadius:6,minWidth:100}}>
+    <div style={{fontSize:10,color:"#94A3B8",fontFamily:mono,letterSpacing:"0.05em",marginBottom:4}}>{label}</div>
+    <div style={{fontSize:20,fontWeight:700,color:color||NAVY,fontFamily:mono}}>{value}</div>
+    {sub && <div style={{fontSize:10,color:"#64748B",marginTop:2}}>{sub}</div>}
+  </div>;
 }
 
 function PNavModelMod() {
   const [tab, setTab] = useState("Scenario");
   const [rate2y, setRate2y] = useState(3.88);
+  const [selectedTicker, setSelectedTicker] = useState("GBDC");
 
-  const scenarios = useMemo(() => {
-    const r = rate2y / 100;
-    return TICKERS.map(t => {
-      const f = LATEST[t];
-      const fitted = predict(t, r);
-      const implied_price = fitted * f.nav_ps;
-      const upside = (implied_price / f.price - 1) * 100;
-      return { ticker: t, pnav_actual: f.pnav, pnav_fitted: fitted, nav: f.nav_ps, price: f.price, implied_price, upside, nii_ps: f.nii_ps, fv_cost: f.fv_cost, debt_nav: f.debt_nav };
-    });
-  }, [rate2y]);
+  const scenarios = useMemo(() => TICKERS.map(t => {
+    const f = LATEST[t];
+    const fitted = predict(t, rate2y/100);
+    const impliedPx = fitted * f.nav_ps;
+    const upside = (impliedPx / f.price - 1) * 100;
+    const divYld = f.div_ann / f.price * 100;
+    const modelYld = f.div_ann / impliedPx * 100;
+    return { t, ...f, fitted, impliedPx, upside, divYld, modelYld };
+  }), [rate2y]);
 
-  // Build residual time series by date
-  const dates = [...new Set(TS.map(r => r.d))].sort();
-  const residByDate = useMemo(() => {
-    return dates.map(d => {
-      const row = { d };
-      const obs = TS.filter(r => r.d === d);
-      obs.forEach(r => {
-        row[r.t + "_resid"] = r.resid;
-        row[r.t + "_pnav"] = r.pnav;
-        row[r.t + "_fitted"] = r.fitted;
-      });
-      if (obs.length > 0) row.r2y = obs[0].r2y;
-      // avg residual
-      const resids = obs.map(r => r.resid);
-      row.avg_resid = resids.length > 0 ? resids.reduce((a,b)=>a+b,0)/resids.length : 0;
-      return row;
+  const waterfall = useMemo(() => TICKERS.map(t => {
+    const f = LATEST[t];
+    const base = COEFF.const;
+    const rateEff = COEFF.tsy_2y * f.tsy_2y;
+    const niiEff = COEFF.nii_ps * f.nii_ps;
+    const fvcEff = COEFF.fv_cost * f.fv_cost;
+    const levEff = COEFF.debt_nav * f.debt_nav;
+    const feEff = COEFF[t] || 0;
+    const fitted = base + rateEff + niiEff + fvcEff + levEff + feEff;
+    const residual = f.pnav - fitted;
+    return { t, base, rateEff, niiEff, fvcEff, levEff, feEff, fitted, residual, actual: f.pnav };
+  }), []);
+
+  const residTS = useMemo(() => {
+    const data = {};
+    TS.forEach(r => {
+      if (!data[r.d]) data[r.d] = { d: r.d };
+      data[r.d][r.t] = r.resid;
     });
+    return Object.values(data).sort((a,b) => a.d.localeCompare(b.d));
   }, []);
 
-  const rateSensitivity = useMemo(() => {
-    const rates = [2.5, 3.0, 3.25, 3.5, 3.75, 4.0, 4.25, 4.5, 5.0];
-    return rates.map(rPct => {
-      const r = rPct / 100;
-      const row = { rate: rPct };
-      TICKERS.forEach(t => { row[t] = predict(t, r); });
-      return row;
-    });
-  }, []);
+  const pnavTS = useMemo(() => {
+    const sel = TS.filter(r => r.t === selectedTicker);
+    return sel.map(r => ({ d: r.d, actual: r.pnav, fitted: r.fitted }));
+  }, [selectedTicker]);
+
+  const scatterData = useMemo(() =>
+    TS.filter(r => r.t === selectedTicker).map(r => ({ x: r.fitted, y: r.pnav, d: r.d }))
+  , [selectedTicker]);
 
   return (
-    <div style={{fontFamily:"'DM Sans','Helvetica Neue',sans-serif",background:"#F8FAFC",minHeight:"100vh"}}>
-      <div style={{background:"linear-gradient(135deg,"+NAVY+" 0%,"+SLATE+" 100%)",padding:"24px 32px 16px",color:"white"}}>
-        <div style={{fontSize:22,fontWeight:800,letterSpacing:"-0.5px"}}>BDC P/NAV Model</div>
-        <div style={{fontSize:13,opacity:0.7,marginTop:2}}>Daily panel | {MODEL_N.toLocaleString()} obs | R-sq={MODEL_R2.toFixed(4)} | P/NAV ~ 2Y Treasury + NII/sh + FV/Cost + Debt/NAV + Name FE</div>
-      </div>
+    <div>
+        {/* Stat boxes */}
+        <div style={{display:"flex",gap:12,marginBottom:20,flexWrap:"wrap"}}>
+          <StatBox label="R-SQUARED" value={(MODEL_R2*100).toFixed(1)+"%"} sub="of P/NAV variance" />
+          <StatBox label="2Y SENSITIVITY" value={(COEFF.tsy_2y*0.01*100).toFixed(1)+"pp"} sub="per 100bp" color={RED} />
+          <StatBox label="NII SENSITIVITY" value={(COEFF.nii_ps*0.10*100).toFixed(1)+"pp"} sub="per $0.10 NII/sh" color={GREEN} />
+          <StatBox label="OBSERVATIONS" value={MODEL_N.toLocaleString()} sub="daily, 6 names" />
+        </div>
 
-      <div style={{display:"flex",gap:0,borderBottom:"2px solid "+NAVY,background:"white",paddingLeft:32}}>
-        {PNAV_TABS.map(t => (
-          <button key={t} onClick={() => setTab(t)} style={{
-            padding:"10px 20px",fontSize:13,fontWeight:tab===t?700:500,
-            color:tab===t?NAVY:"#94A3B8",background:tab===t?"#F0F4F8":"transparent",
-            border:"none",borderBottom:tab===t?"3px solid "+GOLD:"3px solid transparent",cursor:"pointer"
-          }}>{t}</button>
-        ))}
-      </div>
+        {/* Tabs */}
+        <div style={{display:"flex",gap:6,marginBottom:16,flexWrap:"wrap"}}>
+          {PNAV_TABS.map(t => <Pill key={t} active={tab===t} onClick={() => setTab(t)}>{t.toUpperCase()}</Pill>)}
+        </div>
 
-      <div style={{padding:"20px 32px",maxWidth:1200}}>
-
+        {/* ------- SCENARIO TAB ------- */}
         {tab === "Scenario" && (
-          <div>
-            <div style={{background:"white",borderRadius:8,padding:20,marginBottom:20,boxShadow:"0 1px 3px rgba(0,0,0,0.08)"}}>
-              <div style={{fontSize:15,fontWeight:700,color:NAVY,marginBottom:12}}>Rate Scenario Tool</div>
-              <div style={{display:"flex",alignItems:"center",gap:16,marginBottom:20}}>
-                <label style={{fontSize:13,fontWeight:600,color:NAVY}}>2Y Treasury Rate:</label>
-                <input type="range" min={200} max={550} value={Math.round(rate2y*100)} onChange={e => setRate2y(e.target.value/100)}
-                  style={{flex:1,maxWidth:400,accentColor:NAVY}} />
-                <span style={{fontFamily:"'DM Mono',monospace",fontSize:16,fontWeight:700,color:NAVY,minWidth:60}}>{rate2y.toFixed(2)}%</span>
-              </div>
-              <div style={{fontSize:11,color:"#94A3B8",marginBottom:16}}>
-                Each 100bp change in 2Y = {Math.abs(COEFF.tsy_2y * 0.01 * 100).toFixed(1)}pp P/NAV | Current 2Y: {(LATEST.ARCC.tsy_2y*100).toFixed(2)}% | Fundamentals held at latest reported quarter
-              </div>
-              <table style={{width:"100%",borderCollapse:"collapse",fontFamily:"'DM Mono',monospace",fontSize:11}}>
+          <div style={{background:"white",borderRadius:8,padding:20,boxShadow:"0 1px 3px rgba(0,0,0,0.08)"}}>
+            <div style={{fontSize:15,fontWeight:700,color:NAVY,marginBottom:4}}>Rate Scenario Tool</div>
+            <div style={{fontSize:11,color:"#64748B",marginBottom:16}}>Adjust the 2Y Treasury rate to see model-implied P/NAV and price targets for each BDC</div>
+
+            <div style={{display:"flex",alignItems:"center",gap:16,marginBottom:20,padding:"12px 16px",background:"#F8FAFC",borderRadius:6}}>
+              <span style={{fontSize:11,fontFamily:mono,color:"#64748B",whiteSpace:"nowrap"}}>2Y TREASURY</span>
+              <input type="range" min={100} max={600} value={Math.round(rate2y*100)} onChange={e => setRate2y(e.target.value/100)}
+                style={{flex:1,accentColor:NAVY}} />
+              <span style={{fontSize:18,fontWeight:700,fontFamily:mono,color:NAVY,minWidth:60,textAlign:"right"}}>{rate2y.toFixed(2)}%</span>
+            </div>
+
+            <div style={{overflowX:"auto"}}>
+              <table style={{width:"100%",borderCollapse:"collapse",fontFamily:mono,fontSize:11}}>
                 <thead>
                   <tr style={{borderBottom:"2px solid "+NAVY}}>
-                    {["Name","NAV","Price","Actual P/NAV","Model P/NAV","Implied Px","Upside","NII/sh","FV/Cost","Debt/NAV"].map(h => (
-                      <th key={h} style={{textAlign:h==="Name"?"left":"right",padding:"6px 8px",color:NAVY,fontWeight:700}}>{h}</th>
+                    {["Name","Price","NAV","P/NAV","Fitted","Impl. Px","Upside","Div Yld","Model Yld"].map(h => (
+                      <th key={h} style={{padding:"8px 10px",textAlign:h==="Name"?"left":"right",color:NAVY,fontSize:10,letterSpacing:"0.04em"}}>{h}</th>
                     ))}
                   </tr>
                 </thead>
                 <tbody>
-                  {scenarios.map((s, i) => (
-                    <tr key={s.ticker} style={{borderBottom:"1px solid #E2E8F0",background:i%2===0?"#F8FAFC":"white"}}>
-                      <td style={{padding:"5px 8px",fontWeight:700,color:TC[s.ticker]}}>{s.ticker}</td>
-                      <td style={{padding:"5px 8px",textAlign:"right"}}>${s.nav.toFixed(2)}</td>
-                      <td style={{padding:"5px 8px",textAlign:"right"}}>${s.price.toFixed(2)}</td>
-                      <td style={{padding:"5px 8px",textAlign:"right"}}>{(s.pnav_actual*100).toFixed(1)}%</td>
-                      <td style={{padding:"5px 8px",textAlign:"right",fontWeight:700}}>{(s.pnav_fitted*100).toFixed(1)}%</td>
-                      <td style={{padding:"5px 8px",textAlign:"right",fontWeight:700}}>${s.implied_price.toFixed(2)}</td>
-                      <td style={{padding:"5px 8px",textAlign:"right",fontWeight:700,color:s.upside>5?GREEN:s.upside<-5?RED:"#64748B"}}>{s.upside>0?"+":""}{s.upside.toFixed(1)}%</td>
-                      <td style={{padding:"5px 8px",textAlign:"right"}}>${s.nii_ps.toFixed(3)}</td>
-                      <td style={{padding:"5px 8px",textAlign:"right"}}>{(s.fv_cost*100).toFixed(1)}%</td>
-                      <td style={{padding:"5px 8px",textAlign:"right"}}>{(s.debt_nav*100).toFixed(0)}%</td>
+                  {scenarios.map(s => (
+                    <tr key={s.t} style={{borderBottom:"1px solid #F1F5F9"}}>
+                      <td style={{padding:"8px 10px",fontWeight:700,color:TC[s.t]}}>{s.t}</td>
+                      <td style={{padding:"8px 10px",textAlign:"right"}}>${s.price.toFixed(2)}</td>
+                      <td style={{padding:"8px 10px",textAlign:"right"}}>${s.nav_ps.toFixed(2)}</td>
+                      <td style={{padding:"8px 10px",textAlign:"right",fontWeight:700}}>{(s.pnav*100).toFixed(1)}%</td>
+                      <td style={{padding:"8px 10px",textAlign:"right",fontWeight:700,color:SLATE}}>{(s.fitted*100).toFixed(1)}%</td>
+                      <td style={{padding:"8px 10px",textAlign:"right",fontWeight:700}}>${s.impliedPx.toFixed(2)}</td>
+                      <td style={{padding:"8px 10px",textAlign:"right",fontWeight:700,color:s.upside>0?GREEN:RED}}>{s.upside>0?"+":""}{s.upside.toFixed(1)}%</td>
+                      <td style={{padding:"8px 10px",textAlign:"right"}}>{s.divYld.toFixed(1)}%</td>
+                      <td style={{padding:"8px 10px",textAlign:"right",color:"#64748B"}}>{s.modelYld.toFixed(1)}%</td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             </div>
-            <div style={{background:"white",borderRadius:8,padding:20,boxShadow:"0 1px 3px rgba(0,0,0,0.08)"}}>
-              <div style={{fontSize:15,fontWeight:700,color:NAVY,marginBottom:4}}>Sensitivity Grid: Model-Implied P/NAV at Various 2Y Levels</div>
-              <div style={{fontSize:11,color:"#94A3B8",marginBottom:12}}>Holding all fundamentals constant at latest reported quarter</div>
-              <table style={{width:"100%",borderCollapse:"collapse",fontFamily:"'DM Mono',monospace",fontSize:11}}>
+
+            {/* Sensitivity grid */}
+            <div style={{marginTop:24}}>
+              <div style={{fontSize:13,fontWeight:700,color:NAVY,marginBottom:8}}>P/NAV Sensitivity Grid (by 2Y rate)</div>
+              <div style={{overflowX:"auto"}}>
+                <table style={{width:"100%",borderCollapse:"collapse",fontFamily:mono,fontSize:10}}>
+                  <thead>
+                    <tr style={{borderBottom:"2px solid "+NAVY}}>
+                      <th style={{padding:"6px 8px",textAlign:"left",color:NAVY}}>2Y Rate</th>
+                      {TICKERS.map(t => <th key={t} style={{padding:"6px 8px",textAlign:"right",color:TC[t]}}>{t}</th>)}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {[2.0,2.5,3.0,3.5,3.88,4.0,4.5,5.0].map(r => (
+                      <tr key={r} style={{borderBottom:"1px solid #F1F5F9",background:r===3.88?"#EFF6FF":"transparent",fontWeight:r===3.88?700:400}}>
+                        <td style={{padding:"5px 8px",color:NAVY}}>{r.toFixed(2)}%{r===3.88?" *":""}</td>
+                        {TICKERS.map(t => {
+                          const v = predict(t, r/100);
+                          return <td key={t} style={{padding:"5px 8px",textAlign:"right",color:v>1?GREEN:v<0.85?RED:"#334155"}}>{(v*100).toFixed(1)}%</td>;
+                        })}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+                <div style={{fontSize:9,color:"#94A3B8",marginTop:4}}>* Current rate. Model holds latest quarterly fundamentals constant.</div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ------- WATERFALL TAB ------- */}
+        {tab === "Waterfall" && (
+          <div style={{background:"white",borderRadius:8,padding:20,boxShadow:"0 1px 3px rgba(0,0,0,0.08)"}}>
+            <div style={{fontSize:15,fontWeight:700,color:NAVY,marginBottom:4}}>P/NAV Decomposition Waterfall</div>
+            <div style={{fontSize:11,color:"#64748B",marginBottom:16}}>Attribution of current P/NAV into model components. Residual = market risk premium beyond model-fair value.</div>
+
+            <div style={{overflowX:"auto"}}>
+              <table style={{width:"100%",borderCollapse:"collapse",fontFamily:mono,fontSize:11}}>
                 <thead>
                   <tr style={{borderBottom:"2px solid "+NAVY}}>
-                    <th style={{textAlign:"left",padding:"6px 8px",color:NAVY}}>2Y Rate</th>
-                    {TICKERS.map(t => (<th key={t} style={{textAlign:"right",padding:"6px 8px",color:TC[t],fontWeight:700}}>{t}</th>))}
+                    {["Name","Intercept","2Y Rate","NII/sh","FV/Cost","Debt/NAV","Platform FE","= Fitted","Risk Prem","= Actual"].map(h => (
+                      <th key={h} style={{padding:"8px 6px",textAlign:h==="Name"?"left":"right",color:NAVY,fontSize:9,letterSpacing:"0.04em"}}>{h}</th>
+                    ))}
                   </tr>
                 </thead>
                 <tbody>
-                  {rateSensitivity.map((r, i) => {
-                    const isCurrent = Math.abs(r.rate - LATEST.ARCC.tsy_2y*100) < 0.15;
+                  {waterfall.map(w => (
+                    <tr key={w.t} style={{borderBottom:"1px solid #F1F5F9"}}>
+                      <td style={{padding:"8px 6px",fontWeight:700,color:TC[w.t]}}>{w.t}</td>
+                      <td style={{padding:"8px 6px",textAlign:"right",color:"#64748B"}}>{(w.base*100).toFixed(1)}%</td>
+                      <td style={{padding:"8px 6px",textAlign:"right",color:RED}}>{(w.rateEff*100).toFixed(1)}%</td>
+                      <td style={{padding:"8px 6px",textAlign:"right",color:GREEN}}>{(w.niiEff*100).toFixed(1)}%</td>
+                      <td style={{padding:"8px 6px",textAlign:"right",color:w.fvcEff>0?GREEN:RED}}>{(w.fvcEff*100).toFixed(1)}%</td>
+                      <td style={{padding:"8px 6px",textAlign:"right",color:RED}}>{(w.levEff*100).toFixed(1)}%</td>
+                      <td style={{padding:"8px 6px",textAlign:"right",color:w.feEff>0?GREEN:RED}}>{(w.feEff*100).toFixed(1)}%</td>
+                      <td style={{padding:"8px 6px",textAlign:"right",fontWeight:700,color:SLATE}}>{(w.fitted*100).toFixed(1)}%</td>
+                      <td style={{padding:"8px 6px",textAlign:"right",fontWeight:700,color:w.residual<-0.02?RED:w.residual>0.02?GREEN:"#64748B"}}>{(w.residual*100).toFixed(1)}pp</td>
+                      <td style={{padding:"8px 6px",textAlign:"right",fontWeight:700}}>{(w.actual*100).toFixed(1)}%</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Waterfall bar chart for selected name */}
+            <div style={{marginTop:24}}>
+              <div style={{display:"flex",gap:6,marginBottom:12}}>
+                {TICKERS.map(t => <Pill key={t} active={selectedTicker===t} onClick={() => setSelectedTicker(t)}>{t}</Pill>)}
+              </div>
+              {(() => {
+                const w = waterfall.find(x => x.t === selectedTicker);
+                if (!w) return null;
+                const bars = [
+                  { name:"Intercept", val:w.base, color:"#94A3B8" },
+                  { name:"2Y Rate", val:w.rateEff, color:RED },
+                  { name:"NII/sh", val:w.niiEff, color:GREEN },
+                  { name:"FV/Cost", val:w.fvcEff, color:TEAL },
+                  { name:"Debt/NAV", val:w.levEff, color:"#F59E0B" },
+                  { name:"Platform", val:w.feEff, color:PURPLE },
+                  { name:"Risk Prem", val:w.residual, color:w.residual<0?"#DC2626":"#059669" },
+                ];
+                // Cumulative waterfall
+                let cum = 0;
+                const waterfallBars = bars.map(b => {
+                  const start = cum;
+                  cum += b.val;
+                  return { ...b, start, end: cum };
+                });
+                return <ResponsiveContainer width="100%" height={250}>
+                  <BarChart data={waterfallBars} margin={{top:10,right:20,bottom:5,left:20}}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" />
+                    <XAxis dataKey="name" tick={{fontSize:9,fontFamily:mono}} />
+                    <YAxis tickFormatter={v => (v*100).toFixed(0)+"%"} tick={{fontSize:9,fontFamily:mono}} domain={['auto','auto']} />
+                    <Tooltip formatter={v => (v*100).toFixed(1)+"%"} />
+                    <Bar dataKey="start" stackId="a" fill="transparent" />
+                    <Bar dataKey="val" stackId="a">
+                      {waterfallBars.map((b,i) => <Cell key={i} fill={b.color} />)}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>;
+              })()}
+            </div>
+          </div>
+        )}
+
+        {/* ------- YIELD BRIDGE TAB ------- */}
+        {tab === "Yield Bridge" && (
+          <div style={{background:"white",borderRadius:8,padding:20,boxShadow:"0 1px 3px rgba(0,0,0,0.08)"}}>
+            <div style={{fontSize:15,fontWeight:700,color:NAVY,marginBottom:4}}>Yield Bridge: Model Fair Yield vs Market Yield</div>
+            <div style={{fontSize:11,color:"#64748B",marginBottom:16}}>
+              Model-implied fair yield (dividend / fitted price) vs actual yield. The gap is the credit/risk premium investors demand beyond fundamentals.
+            </div>
+            <div style={{overflowX:"auto"}}>
+              <table style={{width:"100%",borderCollapse:"collapse",fontFamily:mono,fontSize:11}}>
+                <thead>
+                  <tr style={{borderBottom:"2px solid "+NAVY}}>
+                    {["Name","Div/sh","Price","Mkt Yield","Fitted P/NAV","Fair Px","Model Yield","Credit/Risk Prem"].map(h => (
+                      <th key={h} style={{padding:"8px 8px",textAlign:h==="Name"?"left":"right",color:NAVY,fontSize:9,letterSpacing:"0.04em"}}>{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {TICKERS.map(t => {
+                    const f = LATEST[t];
+                    const fitted = predict(t, f.tsy_2y);
+                    const fairPx = fitted * f.nav_ps;
+                    const mktYld = f.div_ann / f.price * 100;
+                    const modelYld = f.div_ann / fairPx * 100;
+                    const prem = mktYld - modelYld;
                     return (
-                      <tr key={r.rate} style={{borderBottom:"1px solid #E2E8F0",background:isCurrent?"#FEF3C7":i%2===0?"#F8FAFC":"white"}}>
-                        <td style={{padding:"5px 8px",fontWeight:isCurrent?700:500}}>{r.rate.toFixed(2)}%{isCurrent?" (current)":""}</td>
-                        {TICKERS.map(t => (
-                          <td key={t} style={{padding:"5px 8px",textAlign:"right",fontWeight:isCurrent?700:400}}>{(r[t]*100).toFixed(1)}%</td>
-                        ))}
+                      <tr key={t} style={{borderBottom:"1px solid #F1F5F9"}}>
+                        <td style={{padding:"8px 8px",fontWeight:700,color:TC[t]}}>{t}</td>
+                        <td style={{padding:"8px 8px",textAlign:"right"}}>${f.div_ann.toFixed(2)}</td>
+                        <td style={{padding:"8px 8px",textAlign:"right"}}>${f.price.toFixed(2)}</td>
+                        <td style={{padding:"8px 8px",textAlign:"right",fontWeight:700}}>{mktYld.toFixed(1)}%</td>
+                        <td style={{padding:"8px 8px",textAlign:"right",color:SLATE}}>{(fitted*100).toFixed(1)}%</td>
+                        <td style={{padding:"8px 8px",textAlign:"right"}}>${fairPx.toFixed(2)}</td>
+                        <td style={{padding:"8px 8px",textAlign:"right",color:SLATE}}>{modelYld.toFixed(1)}%</td>
+                        <td style={{padding:"8px 8px",textAlign:"right",fontWeight:700,color:prem>1.5?RED:prem>0.5?"#D97706":"#64748B"}}>{prem.toFixed(1)}pp</td>
                       </tr>
                     );
                   })}
                 </tbody>
               </table>
             </div>
+            <div style={{fontSize:10,color:"#94A3B8",marginTop:12,lineHeight:1.5}}>
+              Model yield = what the fundamental model says the BDC <em>should</em> yield given rates, NII, marks, and leverage.
+              Credit/risk premium = the additional yield investors demand beyond model-fair value -- represents market-priced credit/macro risk.
+            </div>
           </div>
         )}
 
-        {tab === "Waterfall" && (() => {
-          const waterfalls = TICKERS.map(t => {
+        {/* ------- IMPLIED CREDIT TAB ------- */}
+        {tab === "Implied Credit" && (() => {
+          const CUR_NA = { ARCC:1.8, BXSL:0.9, GBDC:2.0, OBDC:1.9, TCPC:21.0, TSLX:1.0 };
+          const credits = TICKERS.map(t => {
             const f = LATEST[t];
-            const fe = COEFF[t] || 0;
-            const bars = [
-              { label: "Intercept", val: COEFF.const },
-              { label: "Rate", val: COEFF.tsy_2y * f.tsy_2y },
-              { label: "NII", val: COEFF.nii_ps * f.nii_ps },
-              { label: "FV/Cost", val: COEFF.fv_cost * f.fv_cost },
-              { label: "Leverage", val: COEFF.debt_nav * f.debt_nav },
-              { label: "Platform", val: fe },
-            ];
-            const fitted = bars.reduce((s, b) => s + b.val, 0);
-            const residual = f.pnav - fitted;
-            return { ticker: t, bars, fitted, actual: f.pnav, residual, nav: f.nav_ps, price: f.price, nii_ps: f.nii_ps, fv_cost: f.fv_cost, debt_nav: f.debt_nav, tsy_2y: f.tsy_2y };
+            const fitted = predict(t, f.tsy_2y);
+            const resid = f.pnav - fitted;
+            const navLoss = -resid * f.nav_ps;
+            const portPerSh = f.nav_ps * (1 + f.debt_nav);
+            const portLossPct = (navLoss / portPerSh) * 100;
+            const def40 = portLossPct / 40;
+            const def60 = portLossPct / 60;
+            const na = CUR_NA[t] || 0;
+            return { t, fitted, resid, navLoss, portPerSh, portLossPct, def40, def60, na, pnav: f.pnav, price: f.price, nav_ps: f.nav_ps };
           });
-
           return (
             <div style={{background:"white",borderRadius:8,padding:20,boxShadow:"0 1px 3px rgba(0,0,0,0.08)"}}>
-              <div style={{fontSize:15,fontWeight:700,color:NAVY,marginBottom:4}}>P/NAV Decomposition - Discount Attribution</div>
-              <div style={{fontSize:11,color:"#94A3B8",marginBottom:16}}>Each cell = model coefficient x current value. Sum = fitted P/NAV. Gap to actual = risk premium not explained by rates or fundamentals.</div>
+              <div style={{fontSize:15,fontWeight:700,color:NAVY,marginBottom:4}}>Implied Credit Loss Analysis</div>
+              <div style={{fontSize:11,color:"#64748B",marginBottom:16}}>
+                The residual below model-fair value implies the market is pricing cumulative portfolio losses. How severe would losses need to be?
+              </div>
               <div style={{overflowX:"auto"}}>
-                <table style={{width:"100%",borderCollapse:"collapse",fontFamily:"'DM Mono',monospace",fontSize:11}}>
+                <table style={{width:"100%",borderCollapse:"collapse",fontFamily:mono,fontSize:11}}>
                   <thead>
                     <tr style={{borderBottom:"2px solid "+NAVY}}>
-                      {["Name","Intercept","Rate","NII","FV/Cost","Leverage","Platform","= Fitted","Risk Prem","= Actual"].map(h => (
-                        <th key={h} style={{textAlign:h==="Name"?"left":"right",padding:"6px 8px",color:NAVY,fontWeight:700,fontSize:10}}>{h}</th>
+                      {["Name","Actual P/NAV","Fitted P/NAV","Residual","Impl. Port Loss","Defaults @ 40% sev","Defaults @ 60% sev","Current NA"].map(h => (
+                        <th key={h} style={{padding:"8px 6px",textAlign:h==="Name"?"left":"right",color:NAVY,fontSize:9,letterSpacing:"0.04em"}}>{h}</th>
                       ))}
                     </tr>
                   </thead>
                   <tbody>
-                    {waterfalls.map((w, i) => (
-                      <tr key={w.ticker} style={{borderBottom:"1px solid #E2E8F0",background:i%2===0?"#F8FAFC":"white"}}>
-                        <td style={{padding:"6px 8px",fontWeight:700,color:TC[w.ticker]}}>{w.ticker}</td>
-                        {w.bars.map((b, j) => (
-                          <td key={j} style={{padding:"6px 8px",textAlign:"right",color:b.val<0?RED:b.val>0.05?GREEN:"#64748B"}}>
-                            {b.val>=0?"+":""}{(b.val*100).toFixed(1)}
-                          </td>
-                        ))}
-                        <td style={{padding:"6px 8px",textAlign:"right",fontWeight:700,color:NAVY}}>{(w.fitted*100).toFixed(1)}%</td>
-                        <td style={{padding:"6px 8px",textAlign:"right",fontWeight:700,color:RED}}>
-                          {(w.residual*100).toFixed(1)}
-                        </td>
-                        <td style={{padding:"6px 8px",textAlign:"right",fontWeight:700,color:TC[w.ticker]}}>
-                          {(w.actual*100).toFixed(1)}%
-                        </td>
+                    {credits.map(c => (
+                      <tr key={c.t} style={{borderBottom:"1px solid #F1F5F9"}}>
+                        <td style={{padding:"8px 6px",fontWeight:700,color:TC[c.t]}}>{c.t}</td>
+                        <td style={{padding:"8px 6px",textAlign:"right",fontWeight:700}}>{(c.pnav*100).toFixed(1)}%</td>
+                        <td style={{padding:"8px 6px",textAlign:"right",color:SLATE}}>{(c.fitted*100).toFixed(1)}%</td>
+                        <td style={{padding:"8px 6px",textAlign:"right",fontWeight:700,color:c.resid<-0.02?RED:GREEN}}>{(c.resid*100).toFixed(1)}pp</td>
+                        <td style={{padding:"8px 6px",textAlign:"right",fontWeight:700}}>{c.portLossPct.toFixed(1)}%</td>
+                        <td style={{padding:"8px 6px",textAlign:"right"}}>{c.def40.toFixed(1)}%</td>
+                        <td style={{padding:"8px 6px",textAlign:"right"}}>{c.def60.toFixed(1)}%</td>
+                        <td style={{padding:"8px 6px",textAlign:"right",color:c.na>5?RED:c.na>2?"#D97706":"#64748B"}}>{c.na.toFixed(1)}%</td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
               </div>
-              <div style={{marginTop:16,fontSize:11,color:"#64748B",lineHeight:1.6}}>
-                <div style={{marginBottom:8}}><span style={{fontWeight:700,color:NAVY}}>Reading the table:</span> Start at the intercept (+102.3%), then add each factor's contribution. Positive = adds to P/NAV, negative = subtracts. The sum is the model-implied "fair" P/NAV. The risk premium is the unexplained gap between fair and actual.</div>
-                <div>Rate drag is identical across names (-10.9pp) since all share the same 2Y. NII is the primary differentiator (+12pp to +39pp). Leverage is TCPC's killer (-40pp at 176% D/NAV). The risk premium column is the sector-wide de-rating not explained by any measurable variable.</div>
-              </div>
-              <div style={{marginTop:20,borderTop:"1px solid #E2E8F0",paddingTop:16}}>
-                <div style={{fontSize:13,fontWeight:700,color:NAVY,marginBottom:8}}>Underlying Data</div>
-                <table style={{width:"100%",borderCollapse:"collapse",fontFamily:"'DM Mono',monospace",fontSize:10}}>
-                  <thead>
-                    <tr style={{borderBottom:"2px solid "+NAVY}}>
-                      {["Name","NAV","Price","2Y Rate","NII/sh","FV/Cost","Debt/NAV","P/NAV"].map(h => (
-                        <th key={h} style={{textAlign:h==="Name"?"left":"right",padding:"4px 8px",color:NAVY,fontWeight:700}}>{h}</th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {waterfalls.map((w, i) => (
-                      <tr key={w.ticker} style={{borderBottom:"1px solid #E2E8F0",background:i%2===0?"#F8FAFC":"white"}}>
-                        <td style={{padding:"4px 8px",fontWeight:700,color:TC[w.ticker]}}>{w.ticker}</td>
-                        <td style={{padding:"4px 8px",textAlign:"right"}}>${w.nav.toFixed(2)}</td>
-                        <td style={{padding:"4px 8px",textAlign:"right"}}>${w.price.toFixed(2)}</td>
-                        <td style={{padding:"4px 8px",textAlign:"right"}}>{(w.tsy_2y*100).toFixed(2)}%</td>
-                        <td style={{padding:"4px 8px",textAlign:"right"}}>${w.nii_ps.toFixed(3)}</td>
-                        <td style={{padding:"4px 8px",textAlign:"right"}}>{(w.fv_cost*100).toFixed(1)}%</td>
-                        <td style={{padding:"4px 8px",textAlign:"right"}}>{(w.debt_nav*100).toFixed(0)}%</td>
-                        <td style={{padding:"4px 8px",textAlign:"right",fontWeight:700}}>{(w.actual*100).toFixed(1)}%</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+              <div style={{fontSize:10,color:"#94A3B8",marginTop:12,lineHeight:1.5}}>
+                Implied portfolio loss = residual x NAV / total portfolio per share. Defaults @ X% severity = portfolio losses / loss-given-default.
+                For tier 1 BDCs (ARCC, BXSL, TSLX), current non-accruals of 1-2% would need to increase 5-10x to justify market-implied losses.
               </div>
             </div>
           );
         })()}
 
+        {/* ------- MODEL TAB ------- */}
         {tab === "Model" && (
-          <div style={{display:"flex",gap:20,flexWrap:"wrap"}}>
-            <div style={{flex:1,minWidth:500,background:"white",borderRadius:8,padding:20,boxShadow:"0 1px 3px rgba(0,0,0,0.08)"}}>
-              <div style={{fontFamily:"'DM Mono',monospace",fontSize:12,color:NAVY,fontWeight:700,marginBottom:4}}>
-                P/NAV ~ 2Y Treasury + NII/sh + FV/Cost + Debt/NAV + Name FE
-              </div>
-              <div style={{fontFamily:"'DM Mono',monospace",fontSize:11,color:"#64748B",marginBottom:12}}>
-                N={MODEL_N.toLocaleString()} daily obs | R-sq={MODEL_R2.toFixed(4)} | 6 BDCs x Apr 2021 - Mar 2026
-              </div>
-              <table style={{width:"100%",borderCollapse:"collapse",fontFamily:"'DM Mono',monospace",fontSize:11}}>
-                <thead>
-                  <tr style={{borderBottom:"2px solid "+NAVY}}>
-                    {["Variable","Coeff","t-stat","Sig","Interpretation"].map(h => (
-                      <th key={h} style={{textAlign:["Variable","Interpretation"].includes(h)?"left":"right",padding:"4px 8px",color:NAVY,fontWeight:700}}>{h}</th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  <CoeffRow name="const" label="Intercept" interp="Base P/NAV level" />
-                  <CoeffRow name="tsy_2y" label="2Y Treasury" interp={"Each 100bp drop -> " + Math.abs(COEFF.tsy_2y*0.01*100).toFixed(1) + "pp P/NAV decline"} />
-                  <CoeffRow name="nii_ps" label="NII / Share" interp="Each $0.10 NII/sh increase -> +4.8pp P/NAV" />
-                  <CoeffRow name="fv_cost" label="FV / Cost" interp="Mark quality - healthier marks -> premium" />
-                  <CoeffRow name="debt_nav" label="Debt / NAV" interp="Each 10% more leverage -> -2.3pp P/NAV" />
-                  <CoeffRow name="BXSL" label="FE: BXSL" interp="Shorter public track record discount" />
-                  <CoeffRow name="GBDC" label="FE: GBDC" interp="Near zero - no persistent premium/discount" />
-                  <CoeffRow name="OBDC" label="FE: OBDC" interp="Persistent discount to peers" />
-                  <CoeffRow name="TCPC" label="FE: TCPC" interp="Credit-impaired discount" />
-                  <CoeffRow name="TSLX" label="FE: TSLX" interp="Best-in-class origination premium" />
-                </tbody>
-              </table>
-              <div style={{fontSize:11,color:"#64748B",lineHeight:1.6,marginTop:12}}>
-                ARCC is the omitted base. All variables significant at 1%. The 2Y Treasury captures forward rate expectations at daily frequency - the channel the quarterly regression missed. NII/share captures realized earnings power. Together they explain 77% of daily P/NAV variation across 6 BDCs over 5 years.
-              </div>
+          <div style={{background:"white",borderRadius:8,padding:20,boxShadow:"0 1px 3px rgba(0,0,0,0.08)"}}>
+            <div style={{fontSize:15,fontWeight:700,color:NAVY,marginBottom:4}}>Regression Coefficients</div>
+            <div style={{fontSize:11,color:"#64748B",marginBottom:16}}>
+              P/NAV = {COEFF.const.toFixed(3)} {COEFF.tsy_2y < 0 ? "-" : "+"} {Math.abs(COEFF.tsy_2y).toFixed(3)} x 2Y {COEFF.nii_ps > 0 ? "+" : "-"} {Math.abs(COEFF.nii_ps).toFixed(3)} x NII/sh + ... + FE
             </div>
-          </div>
-        )}
-
-        {tab === "Residuals" && (
-          <div>
-            <div style={{background:"white",borderRadius:8,padding:20,marginBottom:20,boxShadow:"0 1px 3px rgba(0,0,0,0.08)"}}>
-              <div style={{fontSize:15,fontWeight:700,color:NAVY,marginBottom:4}}>P/NAV Residual Time Series (Daily Model, Monthly Sampled)</div>
-              <div style={{fontSize:11,color:"#94A3B8",marginBottom:16}}>Positive = rich vs model | Negative = cheap | Gap = risk premium the market charges beyond fundamentals + rates</div>
-              <ResponsiveContainer width="100%" height={380}>
-                <LineChart data={residByDate} margin={{top:5,right:20,bottom:30,left:20}}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" />
-                  <XAxis dataKey="d" style={{fontSize:9}} angle={-45} textAnchor="end" height={50} interval={5} />
-                  <YAxis tickFormatter={v => (v*100).toFixed(0)+"%"} style={{fontSize:11}} domain={[-0.25,0.25]}
-                    label={{value:"Residual (pp)",angle:-90,position:"insideLeft",style:{fontSize:12,fill:NAVY}}} />
-                  <ReferenceLine y={0} stroke={NAVY} strokeWidth={2} strokeDasharray="4 4" />
-                  <Tooltip formatter={v => (v*100).toFixed(1)+"pp"} />
-                  <Legend wrapperStyle={{fontSize:11}} />
-                  {TICKERS.map(t => (
-                    <Line key={t} dataKey={t+"_resid"} name={t} stroke={TC[t]} strokeWidth={1.5} dot={false} connectNulls type="monotone" />
+            <table style={{width:"100%",borderCollapse:"collapse",fontFamily:mono,fontSize:11}}>
+              <thead>
+                <tr style={{borderBottom:"2px solid "+NAVY}}>
+                  {["Variable","Coefficient","Std Error","t-stat","Sig","Interpretation"].map(h => (
+                    <th key={h} style={{padding:"8px 10px",textAlign:h==="Variable"||h==="Interpretation"?"left":"right",color:NAVY,fontSize:10}}>{h}</th>
                   ))}
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
-            <div style={{background:"white",borderRadius:8,padding:20,boxShadow:"0 1px 3px rgba(0,0,0,0.08)"}}>
-              <div style={{fontSize:15,fontWeight:700,color:NAVY,marginBottom:4}}>Average Sector Risk Premium (mean residual)</div>
-              <div style={{fontSize:11,color:"#94A3B8",marginBottom:12}}>When all names go negative simultaneously, the sector is trading cheap to what fundamentals + rates justify</div>
-              <ResponsiveContainer width="100%" height={200}>
-                <BarChart data={residByDate.filter((_,i) => i % 2 === 0)} margin={{top:5,right:20,bottom:30,left:20}}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" />
-                  <XAxis dataKey="d" style={{fontSize:8}} angle={-45} textAnchor="end" height={50} interval={4} />
-                  <YAxis tickFormatter={v => (v*100).toFixed(0)+"%"} style={{fontSize:11}} domain={[-0.2,0.2]} />
-                  <ReferenceLine y={0} stroke={NAVY} strokeWidth={2} />
-                  <Tooltip formatter={v => (v*100).toFixed(1)+"pp"} />
-                  <Bar dataKey="avg_resid" name="Avg Residual">
-                    {residByDate.filter((_,i) => i % 2 === 0).map((d, i) => (
-                      <Cell key={i} fill={d.avg_resid < 0 ? RED : GREEN} />
-                    ))}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
+                </tr>
+              </thead>
+              <tbody>
+                {[
+                  {name:"const",label:"Intercept",interp:"Base P/NAV when all factors = 0"},
+                  {name:"tsy_2y",label:"2Y Treasury",interp:"100bp rise -> "+(COEFF.tsy_2y*0.01*100).toFixed(1)+"pp P/NAV"},
+                  {name:"nii_ps",label:"NII / Share",interp:"$0.10 higher NII -> "+(COEFF.nii_ps*0.10*100).toFixed(1)+"pp P/NAV"},
+                  {name:"fv_cost",label:"FV / Cost",interp:"Mark quality signal (portfolio health)"},
+                  {name:"debt_nav",label:"Debt / NAV",interp:"Leverage penalty: higher leverage -> lower P/NAV"},
+                  ...TICKERS.filter(t => COEFF[t] !== undefined).map(t => ({name:t,label:t+" FE",interp:"Platform premium vs ARCC (omitted)"}))
+                ].map(row => {
+                  const b = COEFF[row.name], t = TSTAT[row.name];
+                  const sig = Math.abs(t)>2.58?"***":Math.abs(t)>1.96?"**":Math.abs(t)>1.65?"*":"";
+                  return (
+                    <tr key={row.name} style={{borderBottom:"1px solid #F1F5F9"}}>
+                      <td style={{padding:"8px 10px",fontWeight:600}}>{row.label}</td>
+                      <td style={{padding:"8px 10px",textAlign:"right",color:b>0?GREEN:b<0?RED:"#334155",fontWeight:700}}>{b > 0 ? "+" : ""}{b.toFixed(4)}</td>
+                      <td style={{padding:"8px 10px",textAlign:"right",color:"#64748B"}}>{(SE[row.name] || 0).toFixed(4)}</td>
+                      <td style={{padding:"8px 10px",textAlign:"right",fontWeight:600}}>{t.toFixed(1)}</td>
+                      <td style={{padding:"8px 10px",textAlign:"right",color:sig.length>=3?GREEN:sig.length>=2?"#D97706":"#64748B",fontWeight:700}}>{sig || "n.s."}</td>
+                      <td style={{padding:"8px 10px",fontSize:10,color:"#64748B"}}>{row.interp}</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
           </div>
         )}
 
+        {/* ------- RESIDUALS TAB ------- */}
+        {tab === "Residuals" && (
+          <div style={{background:"white",borderRadius:8,padding:20,boxShadow:"0 1px 3px rgba(0,0,0,0.08)"}}>
+            <div style={{fontSize:15,fontWeight:700,color:NAVY,marginBottom:4}}>Residual Analysis</div>
+            <div style={{fontSize:11,color:"#64748B",marginBottom:16}}>
+              Residual = Actual P/NAV - Model Fitted. Negative = trading below fundamental fair value. Persistent negatives = market risk premium.
+            </div>
+
+            {/* Ticker selector */}
+            <div style={{display:"flex",gap:6,marginBottom:16}}>
+              {TICKERS.map(t => <Pill key={t} active={selectedTicker===t} onClick={() => setSelectedTicker(t)}>{t}</Pill>)}
+            </div>
+
+            {/* Actual vs Fitted time series */}
+            <div style={{fontSize:13,fontWeight:600,color:NAVY,marginBottom:8}}>Actual vs Fitted P/NAV: {selectedTicker}</div>
+            <ResponsiveContainer width="100%" height={220}>
+              <LineChart data={pnavTS} margin={{top:5,right:20,bottom:5,left:20}}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" />
+                <XAxis dataKey="d" tick={{fontSize:9,fontFamily:mono}} tickFormatter={d => d.slice(0,7)} interval={5} />
+                <YAxis tickFormatter={v => (v*100).toFixed(0)+"%"} tick={{fontSize:9,fontFamily:mono}} domain={['auto','auto']} />
+                <Tooltip formatter={v => (v*100).toFixed(1)+"%"} labelFormatter={l => l} />
+                <Line type="monotone" dataKey="actual" stroke={TC[selectedTicker]} strokeWidth={2} dot={false} name="Actual" />
+                <Line type="monotone" dataKey="fitted" stroke="#94A3B8" strokeWidth={1.5} strokeDasharray="4 3" dot={false} name="Fitted" />
+                <ReferenceLine y={1} stroke="#64748B" strokeDasharray="2 2" />
+                <Legend wrapperStyle={{fontSize:10,fontFamily:mono}} />
+              </LineChart>
+            </ResponsiveContainer>
+
+            {/* Residuals over time - all names */}
+            <div style={{fontSize:13,fontWeight:600,color:NAVY,marginTop:24,marginBottom:8}}>Residuals Over Time (All Names)</div>
+            <ResponsiveContainer width="100%" height={220}>
+              <LineChart data={residTS} margin={{top:5,right:20,bottom:5,left:20}}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" />
+                <XAxis dataKey="d" tick={{fontSize:9,fontFamily:mono}} tickFormatter={d => d.slice(0,7)} interval={5} />
+                <YAxis tickFormatter={v => (v*100).toFixed(0)+"pp"} tick={{fontSize:9,fontFamily:mono}} domain={['auto','auto']} />
+                <Tooltip formatter={v => v ? (v*100).toFixed(1)+"pp" : "N/A"} labelFormatter={l => l} />
+                <ReferenceLine y={0} stroke={NAVY} strokeWidth={1.5} />
+                {TICKERS.map(t => <Line key={t} type="monotone" dataKey={t} stroke={TC[t]} strokeWidth={1.2} dot={false} name={t} />)}
+                <Legend wrapperStyle={{fontSize:10,fontFamily:mono}} />
+              </LineChart>
+            </ResponsiveContainer>
+
+            {/* Scatter: actual vs fitted */}
+            <div style={{fontSize:13,fontWeight:600,color:NAVY,marginTop:24,marginBottom:8}}>Actual vs Fitted: {selectedTicker}</div>
+            <ResponsiveContainer width="100%" height={250}>
+              <ScatterChart margin={{top:5,right:20,bottom:20,left:20}}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" />
+                <XAxis type="number" dataKey="x" name="Fitted" tickFormatter={v => (v*100).toFixed(0)+"%"} tick={{fontSize:9,fontFamily:mono}} label={{value:"Fitted P/NAV",position:"bottom",fontSize:10,fontFamily:mono}} />
+                <YAxis type="number" dataKey="y" name="Actual" tickFormatter={v => (v*100).toFixed(0)+"%"} tick={{fontSize:9,fontFamily:mono}} label={{value:"Actual P/NAV",angle:-90,position:"left",fontSize:10,fontFamily:mono}} />
+                <Tooltip formatter={v => (v*100).toFixed(1)+"%"} />
+                <Scatter data={scatterData} fill={TC[selectedTicker]} fillOpacity={0.4} r={2} />
+                <ReferenceLine segment={[{x:0.5,y:0.5},{x:1.5,y:1.5}]} stroke={NAVY} strokeDasharray="4 3" />
+              </ScatterChart>
+            </ResponsiveContainer>
+          </div>
+        )}
+
+        {/* ------- DATA TAB ------- */}
         {tab === "Data" && (
           <div style={{background:"white",borderRadius:8,padding:20,boxShadow:"0 1px 3px rgba(0,0,0,0.08)",overflowX:"auto"}}>
             <div style={{fontSize:15,fontWeight:700,color:NAVY,marginBottom:12}}>Monthly Time Series (sampled from daily)</div>
-            <table style={{borderCollapse:"collapse",fontFamily:"'DM Mono',monospace",fontSize:10,whiteSpace:"nowrap"}}>
+            <table style={{borderCollapse:"collapse",fontFamily:mono,fontSize:10,whiteSpace:"nowrap"}}>
               <thead>
                 <tr style={{borderBottom:"2px solid "+NAVY,position:"sticky",top:0,background:"white"}}>
                   {["Date","Name","2Y","P/NAV","Fitted","Resid"].map(h => (
@@ -4502,7 +4622,6 @@ function PNavModelMod() {
             </table>
           </div>
         )}
-      </div>
     </div>
   );
 }
@@ -5008,17 +5127,19 @@ function DataExportMod() {
 
 function BDCFramework() {
   const [bdc, setBdc] = useState("ARCC");
-  const [view, setView] = useState("exec");
+  const [view, setView] = useState("pnavmodel");
   const [tab, setTab] = useState("capstructure");
+  const [showOverview, setShowOverview] = useState(false);
+  const [showDeprecated, setShowDeprecated] = useState(false);
   const p = BDC[bdc];
 
-  const isMeta = view === "methodology" || view === "compare" || view === "backtest" || view === "market" || view === "exec" || view === "marketlive" || view === "dataexport" || view === "returngrid" || view === "gbdcmodel" || view === "niisens" || view === "pnavmodel";
+  const META_VIEWS = ["methodology","compare","backtest","market","marketlive","exec","dataexport","returngrid","gbdcmodel","pnavmodel","niisens"];
+  const isMeta = META_VIEWS.includes(view);
   const activeBDC = isMeta ? null : view;
   const activeP = activeBDC ? BDC[activeBDC] : p;
 
   const mods = {
     capstructure: <CapMod p={activeP} />,
-    implied: <ImpliedMod p={activeP} />,
     cohort: <CohortMod p={activeP} />,
     na: <NAMod p={activeP} />,
     sector: <SectorMod p={activeP} />,
@@ -5026,20 +5147,30 @@ function BDCFramework() {
     vintage: <VintMod p={activeP} />,
   };
 
-  const topNav = [
-    { id: "exec", label: "Executive Summary", color: C.navy },
+  // ── Primary nav buttons ──
+  const primaryNav = [
+    { id: "pnavmodel", label: "P/NAV Model", color: "#6B21A8" },
     { id: "market", label: "Market", color: C.sky },
     { id: "marketlive", label: "Market Live", color: "#2E86AB" },
+  ];
+
+  // ── BDC Overview children ──
+  const overviewNav = Object.values(BDC).map(b => ({ id: b.ticker, label: b.ticker, sub: b.name, color: b.color }));
+
+  // ── Deprecated children ──
+  const deprecatedNav = [
+    { id: "exec", label: "Executive Summary", color: C.navy },
     { id: "compare", label: "Comparison", color: C.navy },
-    ...Object.values(BDC).map(b => ({ id: b.ticker, label: b.ticker, sub: b.name, color: b.color })),
     { id: "niisens", label: "Rate Sensitivity", color: "#B45309" },
     { id: "returngrid", label: "Return Grid", color: "#4A5568" },
     { id: "gbdcmodel", label: "GBDC Model", color: "#0891B2" },
-    { id: "pnavmodel", label: "P/NAV Model", color: "#6B21A8" },
     { id: "backtest", label: "COVID Backtest", color: C.amber },
     { id: "dataexport", label: "Data Export", color: "#4A5568" },
     { id: "methodology", label: "Methodology", color: C.steel },
   ];
+
+  const isOverviewView = !isMeta;
+  const isDeprecatedView = ["exec","compare","niisens","returngrid","gbdcmodel","backtest","dataexport","methodology"].includes(view);
 
   const headers = {
     exec: { title: "BDC Equity — Executive Summary", sub: "Credit-Adjusted Recovery Framework | 7 Names | As of March 11, 2026" },
@@ -5055,27 +5186,66 @@ function BDCFramework() {
     dataexport: { title: "Data Export", sub: "Downloadable Fundamental Data for All Coverage Names" },
   };
 
+  const navBtn = (n, isActive) => (
+    <button key={n.id} onClick={() => {
+      setView(n.id);
+      if (!META_VIEWS.includes(n.id)) { setBdc(n.id); setTab("capstructure"); }
+    }}
+      style={{
+        padding: "10px 20px", border: `2px solid ${n.color}`, cursor: "pointer",
+        fontFamily: mono, fontSize: 13, fontWeight: 700, letterSpacing: "0.06em",
+        background: isActive ? n.color : "transparent",
+        color: isActive ? "#fff" : n.color, borderRadius: 4,
+      }}>
+      {n.label}
+      {n.sub && <span style={{ fontWeight: 400, fontSize: 10, marginLeft: 8, opacity: 0.8 }}>{n.sub}</span>}
+    </button>
+  );
+
+  const groupBtn = (label, isOpen, toggle, isChildActive, color) => (
+    <button onClick={toggle}
+      style={{
+        padding: "10px 20px", border: `2px solid ${color}`, cursor: "pointer",
+        fontFamily: mono, fontSize: 13, fontWeight: 700, letterSpacing: "0.06em",
+        background: isChildActive ? color : "transparent",
+        color: isChildActive ? "#fff" : color, borderRadius: 4,
+        position: "relative",
+      }}>
+      {label} <span style={{ fontSize: 10, marginLeft: 4, opacity: 0.7 }}>{isOpen ? "▲" : "▼"}</span>
+    </button>
+  );
+
   return (
     <div style={{ minHeight: "100vh", background: "#F4F6F9", padding: "20px 24px", fontFamily: sans }}>
       {/* Top-Level Nav */}
-      <div style={{ display: "flex", gap: 8, marginBottom: 14, flexWrap: "wrap" }}>
-        {topNav.map(n => (
-          <button key={n.id} onClick={() => { setView(n.id); if (!["methodology","compare","backtest","market","marketlive","exec","dataexport","returngrid","gbdcmodel","pnavmodel","niisens"].includes(n.id)) { setBdc(n.id); setTab("capstructure"); } }}
-            style={{
-              padding: "10px 20px", border: `2px solid ${n.color}`, cursor: "pointer",
-              fontFamily: mono, fontSize: 13, fontWeight: 700, letterSpacing: "0.06em",
-              background: view === n.id ? n.color : "transparent",
-              color: view === n.id ? "#fff" : n.color, borderRadius: 4,
-            }}>
-            {n.label}
-            {n.sub && <span style={{ fontWeight: 400, fontSize: 10, marginLeft: 8, opacity: 0.8 }}>{n.sub}</span>}
-          </button>
-        ))}
+      <div style={{ display: "flex", gap: 8, marginBottom: 0, flexWrap: "wrap", alignItems: "center" }}>
+        {/* Primary buttons */}
+        {primaryNav.map(n => navBtn(n, view === n.id))}
+
+        {/* BDC Overview group */}
+        {groupBtn("BDC Overview", showOverview, () => setShowOverview(!showOverview), isOverviewView, C.navy)}
+
+        {/* Deprecated group */}
+        {groupBtn("Deprecated", showDeprecated, () => setShowDeprecated(!showDeprecated), isDeprecatedView, C.muted)}
       </div>
 
+      {/* BDC Overview sub-nav */}
+      {showOverview && (
+        <div style={{ display: "flex", gap: 6, marginTop: 8, flexWrap: "wrap", paddingLeft: 4, borderLeft: `3px solid ${C.navy}` }}>
+          {overviewNav.map(n => navBtn(n, view === n.id))}
+        </div>
+      )}
+
+      {/* Deprecated sub-nav */}
+      {showDeprecated && (
+        <div style={{ display: "flex", gap: 6, marginTop: 8, flexWrap: "wrap", paddingLeft: 4, borderLeft: `3px solid ${C.muted}` }}>
+          {deprecatedNav.map(n => navBtn(n, view === n.id))}
+        </div>
+      )}
+
       {/* Header */}
-      <div style={{ marginBottom: 14 }}>
-        <h1 style={{ fontSize: 22, fontWeight: 700, color: isMeta ? (view === "compare" ? C.navy : view === "backtest" ? C.amber : view === "market" ? C.sky : view === "marketlive" ? "#2E86AB" : view === "exec" ? C.navy : C.steel) : activeP.color, margin: 0 }}>
+      <div style={{ marginTop: 14, marginBottom: 14 }}>
+        <h1 style={{ fontSize: 22, fontWeight: 700, color: isMeta ? (view === "compare" ? C.navy : view === "backtest" ? C.amber : view === "market" ? C.sky : view === "marketlive" ? "#2E86AB" : view === "exec" ? C.navy : view === "pnavmodel" ? "#6B21A8" : C.steel) : activeP.color, margin: 0 }}>
           {isMeta ? headers[view].title : `${activeP.ticker} — Portfolio Quality Deep Dive`}
         </h1>
         <span style={{ fontFamily: mono, fontSize: 12, color: C.muted }}>
@@ -5116,7 +5286,7 @@ function BDCFramework() {
         {!isMeta && (
           <>
             <h3 style={{ fontFamily: sans, fontSize: 14, fontWeight: 600, color: activeP.color, margin: "0 0 12px 0", textTransform: "uppercase", letterSpacing: "0.05em" }}>
-              {activeP.ticker} — {(TABS.find(t => t.id === tab) || {}).label}
+              {activeP.ticker} — {TABS.find(t => t.id === tab)?.label}
             </h3>
             {mods[tab]}
           </>
@@ -5130,8 +5300,8 @@ function BDCFramework() {
   );
 }
 
-const root = ReactDOM.createRoot(document.getElementById('root'));
-root.render(React.createElement(BDCFramework));
-</script>
+
+    ReactDOM.createRoot(document.getElementById("root")).render(<BDCFramework />);
+  </script>
 </body>
 </html>
